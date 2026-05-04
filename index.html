@@ -11,7 +11,6 @@
         #blocklyDiv { flex: 3; }
         #codeArea { flex: 1; background: #252525; padding: 20px; font-family: monospace; overflow-y: auto; color: #00ff00; border-left: 2px solid #333; }
         .bake-button { background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        .bake-button:hover { background: #ff6b81; }
     </style>
 </head>
 <body>
@@ -23,22 +22,29 @@
 
 <div id="main">
     <div id="blocklyDiv"></div>
-    <pre id="codeArea">Your code will show up here...</pre>
+    <pre id="codeArea">Drag the 'START' block to begin!</pre>
 </div>
 
-<!-- Simple Toolbox -->
+<!-- Fixed Toolbox with Categories -->
 <xml id="toolbox" style="display: none">
-    <block type="start_box"></block>
-    <block type="big_text"></block>
-    <block type="small_text"></block>
-    <block type="picture_link"></block>
-    <block type="local_picture"></block>
-    <block type="button_box"></block>
-    <block type="color_box"></block>
+    <category name="1. START HERE" colour="260">
+        <block type="start_box"></block>
+    </category>
+    <category name="2. TEXT" colour="200">
+        <block type="big_text"></block>
+        <block type="small_text"></block>
+    </category>
+    <category name="3. PICTURES" colour="100">
+        <block type="picture_link"></block>
+        <block type="local_picture"></block>
+    </category>
+    <category name="4. BUTTONS" colour="20">
+        <block type="button_box"></block>
+    </category>
 </xml>
 
 <script>
-    // 1. SIMPLE BLOCKS
+    // --- BLOCK DEFINITIONS ---
     Blockly.Blocks['start_box'] = {
         init: function() {
             this.appendDummyInput().appendField("🏠 START HERE");
@@ -49,8 +55,7 @@
 
     Blockly.Blocks['big_text'] = {
         init: function() {
-            this.appendDummyInput().appendField("🔠 BIG TEXT:")
-                .appendField(new Blockly.FieldTextInput("Hello!"), "VAL");
+            this.appendDummyInput().appendField("🔠 BIG TEXT:").appendField(new Blockly.FieldTextInput("Hello!"), "VAL");
             this.setPreviousStatement(true); this.setNextStatement(true);
             this.setColour(200);
         }
@@ -58,8 +63,7 @@
 
     Blockly.Blocks['small_text'] = {
         init: function() {
-            this.appendDummyInput().appendField("🔡 tiny text:")
-                .appendField(new Blockly.FieldTextInput("Welcome to my page"), "VAL");
+            this.appendDummyInput().appendField("🔡 tiny text:").appendField(new Blockly.FieldTextInput("Welcome"), "VAL");
             this.setPreviousStatement(true); this.setNextStatement(true);
             this.setColour(180);
         }
@@ -67,8 +71,7 @@
 
     Blockly.Blocks['picture_link'] = {
         init: function() {
-            this.appendDummyInput().appendField("🖼️ INTERNET PICTURE")
-                .appendField(new Blockly.FieldTextInput("https://tinyurl.com/yckp89u9"), "URL");
+            this.appendDummyInput().appendField("🖼️ WEB IMAGE").appendField(new Blockly.FieldTextInput("https://tinyurl.com/yckp89u9"), "URL");
             this.setPreviousStatement(true); this.setNextStatement(true);
             this.setColour(100);
         }
@@ -76,8 +79,7 @@
 
     Blockly.Blocks['local_picture'] = {
         init: function() {
-            this.appendDummyInput().appendField("📂 MY COMPUTER PICTURE")
-                .appendField(new Blockly.FieldTextInput("photo.jpg"), "FILE");
+            this.appendDummyInput().appendField("📂 MY COMPUTER IMAGE").appendField(new Blockly.FieldTextInput("photo.jpg"), "FILE");
             this.setPreviousStatement(true); this.setNextStatement(true);
             this.setColour(120);
         }
@@ -85,58 +87,24 @@
 
     Blockly.Blocks['button_box'] = {
         init: function() {
-            this.appendDummyInput().appendField("🔘 CLICK BUTTON")
-                .appendField(new Blockly.FieldTextInput("Click Me!"), "VAL");
+            this.appendDummyInput().appendField("🔘 BUTTON").appendField(new Blockly.FieldTextInput("Click Me!"), "VAL");
             this.setPreviousStatement(true); this.setNextStatement(true);
             this.setColour(20);
         }
     };
 
-    Blockly.Blocks['color_box'] = {
-        init: function() {
-            this.appendDummyInput().appendField("🎨 PAINT BOX")
-                .appendField(new Blockly.FieldColor("#3399ff"), "COL");
-            this.appendStatementInput("STACK").appendField("stuff inside:");
-            this.setPreviousStatement(true); this.setNextStatement(true);
-            this.setColour(0);
-        }
-    };
-
-    // 2. SIMPLE GENERATOR (Toddler-Proof)
+    // --- GENERATOR ---
     const engine = new Blockly.Generator('HTML');
-
     engine['start_box'] = function(block) {
-        const inner = engine.statementToCode(block, 'STACK');
-        return `<!DOCTYPE html>\n<html>\n<body style="font-family:sans-serif; text-align:center;">\n${inner}</body>\n</html>`;
+        return `<!DOCTYPE html>\n<html>\n<body style="text-align:center; font-family:sans-serif;">\n${engine.statementToCode(block, 'STACK')}</body>\n</html>`;
     };
+    engine['big_text'] = function(block) { return `<h1>${block.getFieldValue('VAL')}</h1>\n`; };
+    engine['small_text'] = function(block) { return `<p>${block.getFieldValue('VAL')}</p>\n`; };
+    engine['picture_link'] = function(block) { return `<img src="${block.getFieldValue('URL')}" style="width:300px;">\n`; };
+    engine['local_picture'] = function(block) { return `<img src="${block.getFieldValue('FILE')}" style="width:300px;">\n`; };
+    engine['button_box'] = function(block) { return `<button>${block.getFieldValue('VAL')}</button>\n`; };
 
-    engine['big_text'] = function(block) {
-        return `<h1>${block.getFieldValue('VAL')}</h1>\n`;
-    };
-
-    engine['small_text'] = function(block) {
-        return `<p>${block.getFieldValue('VAL')}</p>\n`;
-    };
-
-    engine['picture_link'] = function(block) {
-        return `<img src="${block.getFieldValue('URL')}" style="width:300px; border-radius:10px;">\n`;
-    };
-
-    engine['local_picture'] = function(block) {
-        return `<img src="${block.getFieldValue('FILE')}" style="width:300px;">\n`;
-    };
-
-    engine['button_box'] = function(block) {
-        return `<button style="padding:10px 20px;">${block.getFieldValue('VAL')}</button>\n`;
-    };
-
-    engine['color_box'] = function(block) {
-        const color = block.getFieldValue('COL');
-        const inner = engine.statementToCode(block, 'STACK');
-        return `<div style="background-color:${color}; padding:20px; border-radius:20px;">\n${inner}</div>\n`;
-    };
-
-    // 3. START IT UP
+    // --- INIT ---
     const workspace = Blockly.inject('blocklyDiv', {
         toolbox: document.getElementById('toolbox'),
         theme: Blockly.Themes.Dark,
@@ -144,17 +112,16 @@
     });
 
     workspace.addChangeListener(() => {
-        const code = engine.workspaceToCode(workspace);
-        document.getElementById('codeArea').innerText = code || "Drag the 'START' block to begin!";
+        document.getElementById('codeArea').innerText = engine.workspaceToCode(workspace) || "Pick a block from the menu!";
     });
 
     function downloadSite() {
         const code = engine.workspaceToCode(workspace);
-        if(!code.includes('<html>')) return alert("You need to use the START block first!");
+        if(!code.includes('<html>')) return alert("Use the START HERE block first!");
         const blob = new Blob([code], {type: 'text/html'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'my_website.html';
+        a.download = 'index.html';
         a.click();
     }
 </script>
