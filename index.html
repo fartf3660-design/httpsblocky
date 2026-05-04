@@ -1,1 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blockly HTML Builder</title>
+    <!-- Load Blockly Core and Blocks -->
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <style>
+        body { font-family: sans-serif; }
+        #app-container { display: flex; height: 90vh; border: 1px solid #ccc; }
+        #blocklyDiv { flex: 2; height: 100%; }
+        #preview-container { flex: 1; display: flex; flex-direction: column; border-left: 1px solid #ccc; }
+        #code-output { height: 50%; background: #f4f4f4; padding: 10px; overflow: auto; border-bottom: 1px solid #ccc; }
+        #visual-preview { height: 50%; padding: 10px; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 0 10px; }
+    </style>
+</head>
+<body>
 
+<header>
+    <h2>Blockly HTML Editor</h2>
+    <p>Drag blocks to build your page!</p>
+</header>
+
+<div id="app-container">
+    <div id="blocklyDiv"></div>
+    <div id="preview-container">
+        <div id="code-output"><pre id="generated-code"></pre></div>
+        <iframe id="visual-preview" title="Preview"></iframe>
+    </div>
+</div>
+
+<!-- Toolbox Definition -->
+<xml id="toolbox" style="display: none">
+    <block type="html_page"></block>
+    <block type="html_title"></block>
+    <block type="text"></block>
+</xml>
+
+<script>
+    // 1. Define the "Page" container block
+    Blockly.Blocks['html_page'] = {
+        init: function() {
+            this.appendDummyInput().appendField("HTML Page");
+            this.appendStatementInput("content").setCheck(null);
+            this.setColour(230);
+            this.setTooltip("The root of your HTML document");
+        }
+    };
+
+    // 2. Define the "Title" (H1) block
+    Blockly.Blocks['html_title'] = {
+        init: function() {
+            this.appendValueInput("TEXT")
+                .setCheck("String")
+                .appendField("Title (H1)");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(160);
+        }
+    };
+
+    // 3. Define the HTML Generator
+    const htmlGenerator = new Blockly.Generator('HTML');
+
+    htmlGenerator['html_page'] = function(block) {
+        const statements_content = htmlGenerator.statementToCode(block, 'content');
+        return `<!DOCTYPE html>\n<html>\n<body>\n${statements_content}</body>\n</html>`;
+    };
+
+    htmlGenerator['html_title'] = function(block) {
+        const text_content = htmlGenerator.valueToCode(block, 'TEXT', 0) || "''";
+        // Clean up quotes from the text block
+        const cleanText = text_content.replace(/^'|'$/g, '');
+        return `  <h1>${cleanText}</h1>\n`;
+    };
+
+    htmlGenerator['text'] = function(block) {
+        const textValue = block.getFieldValue('TEXT');
+        return [textValue, 0];
+    };
+
+    // 4. Inject Blockly
+    const workspace = Blockly.inject('blocklyDiv', {
+        toolbox: document.getElementById('toolbox'),
+        scrollbars: true
+    });
+
+    // 5. Update Preview Function
+    function updatePreview() {
+        const code = htmlGenerator.workspaceToCode(workspace);
+        document.getElementById('generated-code').innerText = code;
+        
+        const previewFrame = document.getElementById('visual-preview');
+        const previewDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+        previewDoc.open();
+        previewDoc.write(code);
+        previewDoc.close();
+    }
+
+    workspace.addChangeListener(updatePreview);
+</script>
+
+</body>
+</html>
