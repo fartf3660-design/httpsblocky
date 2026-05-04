@@ -5,57 +5,78 @@
     <title>Easy Website Builder</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <style>
-        body { background-color: #1a1a1a; color: white; font-family: sans-serif; margin: 0; overflow: hidden; }
+        body { background-color: #1a1a1a; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
         header { background: #000; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; }
         #main { display: flex; height: calc(100vh - 70px); }
-        #blocklyDiv { flex: 3; }
-        #codeArea { flex: 1; background: #252525; padding: 20px; font-family: monospace; overflow-y: auto; color: #00ff00; border-left: 2px solid #333; }
-        .bake-button { background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        #blocklyDiv { flex: 2; height: 100%; }
+        
+        /* The Live Code Viewer Area */
+        #codeAreaWrapper { 
+            flex: 1; 
+            background: #111; 
+            display: flex; 
+            flex-direction: column; 
+            border-left: 2px solid #333; 
+        }
+        .code-title { background: #222; padding: 10px; font-size: 12px; color: #888; border-bottom: 1px solid #333; }
+        #codeDisplay { 
+            padding: 20px; 
+            font-family: 'Consolas', monospace; 
+            color: #00ff00; 
+            white-space: pre-wrap; 
+            margin: 0; 
+            font-size: 14px;
+            overflow-y: auto;
+        }
+
+        .bake-button { background: #3399ff; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-size: 24px; font-weight: bold;">🚀 MY FIRST WEBSITE</div>
-    <button class="bake-button" onclick="downloadSite()">SAVE MY WEBSITE (.html)</button>
+    <div style="font-size: 22px; font-weight: bold;">🚀 WEBSITE BLUEPRINT</div>
+    <button class="bake-button" onclick="downloadSite()">SAVE WEBSITE (.html)</button>
 </header>
 
 <div id="main">
     <div id="blocklyDiv"></div>
-    <pre id="codeArea">Drag the 'START' block to begin!</pre>
+    <div id="codeAreaWrapper">
+        <div class="code-title">LIVE CODE VIEWER</div>
+        <pre id="codeDisplay">Start by dragging a block!</pre>
+    </div>
 </div>
 
-<!-- Fixed Toolbox with Categories -->
 <xml id="toolbox" style="display: none">
-    <category name="1. START HERE" colour="260">
+    <category name="1. START" colour="260">
         <block type="start_box"></block>
     </category>
     <category name="2. TEXT" colour="200">
         <block type="big_text"></block>
         <block type="small_text"></block>
     </category>
-    <category name="3. PICTURES" colour="100">
-        <block type="picture_link"></block>
-        <block type="local_picture"></block>
+    <category name="3. IMAGES" colour="100">
+        <block type="web_image"></block>
+        <block type="local_image"></block>
     </category>
     <category name="4. BUTTONS" colour="20">
-        <block type="button_box"></block>
+        <block type="click_button"></block>
     </category>
 </xml>
 
 <script>
-    // --- BLOCK DEFINITIONS ---
+    // --- 1. BLOCK DEFINITIONS ---
     Blockly.Blocks['start_box'] = {
         init: function() {
-            this.appendDummyInput().appendField("🏠 START HERE");
-            this.appendStatementInput("STACK").appendField("put stuff inside:");
+            this.appendDummyInput().appendField("🏠 MAIN PAGE");
+            this.appendStatementInput("CONTENT").appendField("Put blocks here:");
             this.setColour(260);
         }
     };
 
     Blockly.Blocks['big_text'] = {
         init: function() {
-            this.appendDummyInput().appendField("🔠 BIG TEXT:").appendField(new Blockly.FieldTextInput("Hello!"), "VAL");
+            this.appendDummyInput().appendField("🔠 BIG TEXT").appendField(new Blockly.FieldTextInput("My Title"), "TEXT");
             this.setPreviousStatement(true); this.setNextStatement(true);
             this.setColour(200);
         }
@@ -63,67 +84,100 @@
 
     Blockly.Blocks['small_text'] = {
         init: function() {
-            this.appendDummyInput().appendField("🔡 tiny text:").appendField(new Blockly.FieldTextInput("Welcome"), "VAL");
+            this.appendDummyInput().appendField("🔡 tiny text").appendField(new Blockly.FieldTextInput("Welcome to my site"), "TEXT");
             this.setPreviousStatement(true); this.setNextStatement(true);
             this.setColour(180);
         }
     };
 
-    Blockly.Blocks['picture_link'] = {
+    Blockly.Blocks['web_image'] = {
         init: function() {
-            this.appendDummyInput().appendField("🖼️ WEB IMAGE").appendField(new Blockly.FieldTextInput("https://tinyurl.com/yckp89u9"), "URL");
+            this.appendDummyInput().appendField("🖼️ INTERNET IMAGE").appendField(new Blockly.FieldTextInput("https://tinyurl.com/yckp89u9"), "SRC");
             this.setPreviousStatement(true); this.setNextStatement(true);
             this.setColour(100);
         }
     };
 
-    Blockly.Blocks['local_picture'] = {
+    Blockly.Blocks['local_image'] = {
         init: function() {
-            this.appendDummyInput().appendField("📂 MY COMPUTER IMAGE").appendField(new Blockly.FieldTextInput("photo.jpg"), "FILE");
+            this.appendDummyInput().appendField("📂 COMPUTER IMAGE").appendField(new Blockly.FieldTextInput("cat.jpg"), "FILE");
             this.setPreviousStatement(true); this.setNextStatement(true);
             this.setColour(120);
         }
     };
 
-    Blockly.Blocks['button_box'] = {
+    Blockly.Blocks['click_button'] = {
         init: function() {
-            this.appendDummyInput().appendField("🔘 BUTTON").appendField(new Blockly.FieldTextInput("Click Me!"), "VAL");
+            this.appendDummyInput().appendField("🔘 BUTTON").appendField(new Blockly.FieldTextInput("Click!"), "LABEL");
             this.setPreviousStatement(true); this.setNextStatement(true);
             this.setColour(20);
         }
     };
 
-    // --- GENERATOR ---
-    const engine = new Blockly.Generator('HTML');
-    engine['start_box'] = function(block) {
-        return `<!DOCTYPE html>\n<html>\n<body style="text-align:center; font-family:sans-serif;">\n${engine.statementToCode(block, 'STACK')}</body>\n</html>`;
-    };
-    engine['big_text'] = function(block) { return `<h1>${block.getFieldValue('VAL')}</h1>\n`; };
-    engine['small_text'] = function(block) { return `<p>${block.getFieldValue('VAL')}</p>\n`; };
-    engine['picture_link'] = function(block) { return `<img src="${block.getFieldValue('URL')}" style="width:300px;">\n`; };
-    engine['local_picture'] = function(block) { return `<img src="${block.getFieldValue('FILE')}" style="width:300px;">\n`; };
-    engine['button_box'] = function(block) { return `<button>${block.getFieldValue('VAL')}</button>\n`; };
+    // --- 2. THE GENERATOR ENGINE ---
+    const htmlGenerator = new Blockly.Generator('HTML');
 
-    // --- INIT ---
+    htmlGenerator['start_box'] = function(block) {
+        const content = htmlGenerator.statementToCode(block, 'CONTENT');
+        return `<!DOCTYPE html>\n<html>\n<body style="text-align:center; padding:50px;">\n${content}</body>\n</html>`;
+    };
+
+    htmlGenerator['big_text'] = function(block) {
+        return `  <h1>${block.getFieldValue('TEXT')}</h1>\n`;
+    };
+
+    htmlGenerator['small_text'] = function(block) {
+        return `  <p>${block.getFieldValue('TEXT')}</p>\n`;
+    };
+
+    htmlGenerator['web_image'] = function(block) {
+        return `  <img src="${block.getFieldValue('SRC')}" style="width:200px;">\n`;
+    };
+
+    htmlGenerator['local_image'] = function(block) {
+        return `  <img src="${block.getFieldValue('FILE')}" style="width:200px;">\n`;
+    };
+
+    htmlGenerator['click_button'] = function(block) {
+        return `  <button>${block.getFieldValue('LABEL')}</button>\n`;
+    };
+
+    // Fix for indentation/spacing
+    htmlGenerator.INDENT = "  ";
+
+    // --- 3. STARTING THE SYSTEM ---
     const workspace = Blockly.inject('blocklyDiv', {
         toolbox: document.getElementById('toolbox'),
         theme: Blockly.Themes.Dark,
         renderer: 'zelos'
     });
 
-    workspace.addChangeListener(() => {
-        document.getElementById('codeArea').innerText = engine.workspaceToCode(workspace) || "Pick a block from the menu!";
-    });
+    // THIS FUNCTION FIXES THE LIVE VIEW
+    function refreshLiveCode() {
+        try {
+            const code = htmlGenerator.workspaceToCode(workspace);
+            document.getElementById('codeDisplay').innerText = code || "Drag the MAIN PAGE block out first!";
+        } catch (e) {
+            document.getElementById('codeDisplay').innerText = "Working on it...";
+        }
+    }
 
+    workspace.addChangeListener(refreshLiveCode);
+
+    // --- 4. EXPORTING ---
     function downloadSite() {
-        const code = engine.workspaceToCode(workspace);
-        if(!code.includes('<html>')) return alert("Use the START HERE block first!");
+        const code = htmlGenerator.workspaceToCode(workspace);
+        if(!code.includes('<html>')) {
+            alert("Oops! You need to put everything inside the 'MAIN PAGE' block first!");
+            return;
+        }
         const blob = new Blob([code], {type: 'text/html'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'index.html';
-        a.click();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'my_cool_site.html';
+        link.click();
     }
 </script>
+
 </body>
 </html>
