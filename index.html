@@ -2,161 +2,217 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Gemini Block Coding Studio</title>
+    <title>Gemini - Block Coding</title>
     <style>
-        :root { --bg: #121212; --panel: #1e1e1e; --accent: #3399ff; --text: #e0e0e0; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+        :root { --bg: #0f0f0f; --panel: #181818; --accent: #3d5afe; --text: #efefef; --trash: #ff1744; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
         
         header { 
-            height: 60px; background: #000; display: flex; align-items: center; 
-            padding: 0 20px; justify-content: space-between; border-bottom: 2px solid #333;
+            height: 50px; background: #000; display: flex; align-items: center; 
+            padding: 0 20px; justify-content: space-between; border-bottom: 1px solid #333;
         }
 
-        #editor-container { display: flex; height: calc(100vh - 60px); }
+        #app { display: flex; height: calc(100vh - 50px); }
 
-        /* Sidebar / Toolbox */
-        #toolbox { 
-            width: 200px; background: var(--panel); border-right: 2px solid #333; 
-            padding: 15px; display: flex; flex-direction: column; gap: 10px;
+        /* Sidebar */
+        #sidebar { width: 220px; background: var(--panel); border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .cat-label { padding: 15px 10px 5px; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
+        .block-tool { 
+            margin: 5px 10px; padding: 10px; background: #2a2a2a; border-radius: 4px; 
+            cursor: grab; font-size: 13px; border: 1px solid #444; transition: 0.2s;
         }
-        .block-template { 
-            padding: 10px; border-radius: 6px; cursor: grab; font-weight: bold; font-size: 13px;
-            user-select: none; border: 1px solid rgba(255,255,255,0.1);
-        }
+        .block-tool:hover { background: #333; }
 
         /* Workspace */
-        #workspace { 
-            flex: 2; position: relative; overflow: auto; 
-            background-image: radial-gradient(#333 1px, transparent 1px);
-            background-size: 20px 20px; padding: 50px;
-        }
-
-        /* Live Code View */
-        #code-view { 
-            width: 350px; background: #0a0a0a; border-left: 2px solid #333; 
-            display: flex; flex-direction: column;
-        }
-        #code-header { padding: 10px; font-size: 12px; background: #222; color: #888; }
-        #code-output { flex: 1; padding: 20px; font-family: 'Consolas', monospace; color: #00ff00; white-space: pre-wrap; overflow-y: auto; }
-
-        /* Custom Block Styling */
-        .gemini-block { 
-            width: fit-content; min-width: 150px; padding: 12px; border-radius: 8px; 
-            margin-bottom: 8px; cursor: move; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        .gemini-block input { 
-            background: rgba(0,0,0,0.3); border: 1px solid #555; color: white; 
-            padding: 4px; border-radius: 4px; font-size: 12px; margin-top: 5px; width: 130px;
-        }
-        .gemini-block .label { font-size: 11px; text-transform: uppercase; opacity: 0.8; margin-bottom: 4px; display: block;}
+        #workspace { flex: 2; position: relative; overflow: hidden; background: #121212; }
         
-        /* Colors for different block types */
-        .type-root { background: #4a148c; border-left: 5px solid #ab47bc; }
-        .type-text { background: #1565c0; border-left: 5px solid #42a5f5; }
-        .type-media { background: #2e7d32; border-left: 5px solid #66bb6a; }
-        .type-button { background: #c62828; border-left: 5px solid #ef5350; }
+        /* Code View */
+        #viewer { width: 300px; background: #050505; border-left: 1px solid #333; display: flex; flex-direction: column; }
+        #code-out { flex: 1; padding: 15px; font-family: 'Fira Code', monospace; font-size: 12px; color: #4caf50; overflow: auto; margin: 0; }
 
-        .btn-save { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        /* Real Blocks */
+        .block { 
+            position: absolute; min-width: 180px; background: #222; border-radius: 6px; 
+            border: 1px solid #444; padding: 10px; cursor: move; box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .block-main { border: 2px solid var(--accent); min-height: 200px; width: 250px; z-index: 5; }
+        .block-content { min-height: 100px; border: 1px dashed #444; margin-top: 10px; padding: 10px; border-radius: 4px; }
+        
+        .block input, .block select { 
+            width: 100%; background: #111; border: 1px solid #444; color: #fff; 
+            margin-top: 5px; padding: 4px; font-size: 12px; border-radius: 3px;
+        }
+
+        /* Trash */
+        #trash-can {
+            position: absolute; bottom: 20px; left: 240px; width: 60px; height: 60px;
+            background: var(--trash); border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 24px; opacity: 0.7; transition: 0.3s;
+        }
+        #trash-can:hover { opacity: 1; transform: scale(1.1); }
+
+        .btn { background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-weight: bold; letter-spacing: 1px;">GEMINI - BLOCK CODING</div>
-    <button class="btn-save" onclick="exportHTML()">SAVE WEBSITE (.html)</button>
+    <div style="font-weight: 900; color: var(--accent);">GEMINI - BLOCK CODING</div>
+    <button class="btn" onclick="exportFile()">DOWNLOAD HTML</button>
 </header>
 
-<div id="editor-container">
-    <div id="toolbox">
-        <div style="font-size: 12px; color: #888; margin-bottom: 5px;">ELEMENTS</div>
-        <div class="block-template type-root" draggable="true" data-type="root">🏠 START PAGE</div>
-        <div class="block-template type-text" draggable="true" data-type="h1">🔠 BIG TEXT</div>
-        <div class="block-template type-text" draggable="true" data-type="p">🔡 SMALL TEXT</div>
-        <div class="block-template type-media" draggable="true" data-type="img">🖼️ PICTURE</div>
-        <div class="block-template type-button" draggable="true" data-type="btn">🔘 BUTTON</div>
+<div id="app">
+    <div id="sidebar">
+        <div class="cat-label">Logic</div>
+        <div class="block-tool" draggable="true" data-type="main">🏠 Main Container</div>
+        
+        <div class="cat-label">Content</div>
+        <div class="block-tool" draggable="true" data-type="text">📝 Text Content</div>
+        <div class="block-tool" draggable="true" data-type="img">🖼️ Local Image</div>
+        
+        <div class="cat-label">Style</div>
+        <div class="block-tool" draggable="true" data-type="bg">🎨 Page Color</div>
     </div>
 
-    <div id="workspace">
-        <!-- Dropped blocks go here -->
+    <div id="workspace" id="ws">
+        <div id="trash-can">🗑️</div>
     </div>
 
-    <div id="code-view">
-        <div id="code-header">LIVE HTML SOURCE</div>
-        <pre id="code-output"></pre>
+    <div id="viewer">
+        <div style="padding: 10px; background: #111; font-size: 11px; color: #555;">SOURCE CODE</div>
+        <pre id="code-out"></pre>
     </div>
 </div>
 
 <script>
-    const workspace = document.getElementById('workspace');
-    const codeOutput = document.getElementById('code-output');
-    const toolboxBlocks = document.querySelectorAll('.block-template');
+    const ws = document.getElementById('workspace');
+    const codeOut = document.getElementById('code-out');
+    let draggedEl = null;
+    let offset = { x: 0, y: 0 };
 
-    // Handle Dragging from Toolbox
-    toolboxBlocks.forEach(block => {
-        block.addEventListener('dragstart', e => {
-            e.dataTransfer.setData('type', block.dataset.type);
-        });
+    // 1. Drag and Drop from Sidebar
+    document.querySelectorAll('.block-tool').forEach(tool => {
+        tool.addEventListener('dragstart', e => { e.dataTransfer.setData('type', tool.dataset.type); });
     });
 
-    workspace.addEventListener('dragover', e => e.preventDefault());
-
-    workspace.addEventListener('drop', e => {
+    ws.addEventListener('dragover', e => e.preventDefault());
+    ws.addEventListener('drop', e => {
         e.preventDefault();
         const type = e.dataTransfer.getData('type');
-        if (type) createBlock(type, e.clientX - 250, e.clientY - 100);
+        if (type) createBlock(type, e.clientX - 230, e.clientY - 60);
     });
 
     function createBlock(type, x, y) {
-        const block = document.createElement('div');
-        block.className = `gemini-block type-${getBlockCategory(type)}`;
-        block.dataset.tag = type;
-        
-        let content = '';
-        if (type === 'root') content = `<b>🏠 MAIN PAGE</b><div class="container" style="min-height:50px; border:2px dashed #444; margin-top:10px; padding:10px;"></div>`;
-        else if (type === 'h1') content = `<span class="label">Big Title</span><input type="text" value="Hello World" oninput="generateCode()">`;
-        else if (type === 'p') content = `<span class="label">Paragraph</span><input type="text" value="Welcome to my site" oninput="generateCode()">`;
-        else if (type === 'img') content = `<span class="label">Image URL or File</span><input type="text" value="https://via.placeholder.com/150" oninput="generateCode()">`;
-        else if (type === 'btn') content = `<span class="label">Button Label</span><input type="text" value="Click Me" oninput="generateCode()">`;
+        const b = document.createElement('div');
+        b.className = 'block ' + (type === 'main' ? 'block-main' : '');
+        b.style.left = x + 'px';
+        b.style.top = y + 'px';
+        b.dataset.type = type;
 
-        block.innerHTML = content + `<button onclick="this.parentElement.remove(); generateCode();" style="position:absolute; top:5px; right:5px; background:none; border:none; color:white; cursor:pointer;">×</button>`;
-        
-        workspace.appendChild(block);
-        generateCode();
+        let inner = '';
+        if (type === 'main') {
+            inner = `<b>MAIN CONTAINER</b><div class="block-content" id="main-drop"></div>`;
+        } else if (type === 'text') {
+            inner = `TEXT<select onchange="update()"><option value="h1">Heading</option><option value="p">Paragraph</option></select>
+                     <input type="text" value="Edit me..." oninput="update()">`;
+        } else if (type === 'img') {
+            inner = `IMAGE<input type="file" accept="image/*" onchange="update()">`;
+        } else if (type === 'bg') {
+            inner = `BG COLOR<input type="color" value="#ffffff" onchange="update()">`;
+        }
+
+        b.innerHTML = inner;
+        makeDraggable(b);
+        ws.appendChild(b);
+        update();
     }
 
-    function getBlockCategory(type) {
-        if (type === 'root') return 'root';
-        if (type === 'h1' || type === 'p') return 'text';
-        if (type === 'img') return 'media';
-        return 'button';
+    function makeDraggable(el) {
+        el.onmousedown = function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+            draggedEl = el;
+            const rect = el.getBoundingClientRect();
+            offset.x = e.clientX - rect.left;
+            offset.y = e.clientY - rect.top;
+            el.style.zIndex = 1000;
+        };
     }
 
-    function generateCode() {
-        const blocks = workspace.querySelectorAll('.gemini-block');
-        let html = '';
-        let hasRoot = false;
+    document.onmousemove = function(e) {
+        if (!draggedEl) return;
+        let x = e.clientX - offset.x - 220;
+        let y = e.clientY - offset.y - 50;
+        
+        draggedEl.style.left = x + 'px';
+        draggedEl.style.top = y + 'px';
 
-        blocks.forEach(block => {
-            const tag = block.dataset.tag;
-            const input = block.querySelector('input');
-            const val = input ? input.value : '';
+        // Check if hovering over Main Block
+        const main = document.querySelector('.block-main');
+        if (main && draggedEl !== main) {
+            const mRect = main.getBoundingClientRect();
+            if (e.clientX > mRect.left && e.clientX < mRect.right && e.clientY > mRect.top && e.clientY < mRect.bottom) {
+                main.querySelector('.block-content').appendChild(draggedEl);
+                draggedEl.style.position = 'relative';
+                draggedEl.style.left = '0';
+                draggedEl.style.top = '0';
+            } else if (draggedEl.parentElement !== ws) {
+                ws.appendChild(draggedEl);
+                draggedEl.style.position = 'absolute';
+                draggedEl.style.left = x + 'px';
+                draggedEl.style.top = y + 'px';
+            }
+        }
 
-            if (tag === 'root') {
-                hasRoot = true;
-                // For this simple version, we just wrap everything in the file
-            } else if (tag === 'h1') html += `  <h1>${val}</h1>\n`;
-            else if (tag === 'p') html += `  <p>${val}</p>\n`;
-            else if (tag === 'img') html += `  <img src="${val}" style="max-width:100%;">\n`;
-            else if (tag === 'btn') html += `  <button>${val}</button>\n`;
+        // Trash check
+        const trash = document.getElementById('trash-can').getBoundingClientRect();
+        if (e.clientX > trash.left && e.clientX < trash.right && e.clientY > trash.top && e.clientY < trash.bottom) {
+            draggedEl.style.border = "2px solid red";
+        } else {
+            draggedEl.style.border = "";
+        }
+    };
+
+    document.onmouseup = function(e) {
+        if (!draggedEl) return;
+        const trash = document.getElementById('trash-can').getBoundingClientRect();
+        if (e.clientX > trash.left && e.clientX < trash.right && e.clientY > trash.top && e.clientY < trash.bottom) {
+            draggedEl.remove();
+        }
+        draggedEl.style.zIndex = 10;
+        draggedEl = null;
+        update();
+    };
+
+    function update() {
+        const main = document.querySelector('.block-main');
+        if (!main) { codeOut.innerText = "Add a 'Main Container' to generate code."; return; }
+        
+        const children = main.querySelectorAll('.block');
+        let bodyHtml = '';
+        let bgColor = '#ffffff';
+
+        children.forEach(c => {
+            const type = c.dataset.type;
+            if (type === 'text') {
+                const tag = c.querySelector('select').value;
+                const txt = c.querySelector('input').value;
+                bodyHtml += `  <${tag}>${txt}</${tag}>\n`;
+            } else if (type === 'img') {
+                const file = c.querySelector('input').files[0];
+                const src = file ? URL.createObjectURL(file) : 'placeholder.jpg';
+                bodyHtml += `  <img src="${src}" style="max-width:100%;">\n`;
+            } else if (type === 'bg') {
+                bgColor = c.querySelector('input').value;
+            }
         });
 
-        const fullCode = `<!DOCTYPE html>\n<html>\n<body style="font-family:sans-serif; text-align:center; padding:50px;">\n${html}</body>\n</html>`;
-        codeOutput.innerText = fullCode;
+        const final = `<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body { background: ${bgColor}; font-family: sans-serif; text-align: center; padding: 50px; }\n</style>\n</head>\n<body>\n${bodyHtml}</body>\n</html>`;
+        codeOut.innerText = final;
     }
 
-    function exportHTML() {
-        const code = codeOutput.innerText;
-        const blob = new Blob([code], {type: 'text/html'});
+    function exportFile() {
+        const blob = new Blob([codeOut.innerText], {type: 'text/html'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'index.html';
