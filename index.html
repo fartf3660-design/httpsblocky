@@ -2,135 +2,149 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Gemini - Block Coding</title>
+    <title>Gemini - The Everything Engine</title>
     <style>
-        body { margin: 0; font-family: sans-serif; background: #f4f4f4; color: #000; overflow: hidden; }
-        header { height: 45px; background: #fff; display: flex; align-items: center; padding: 0 15px; justify-content: space-between; border-bottom: 1px solid #ccc; }
-        #app { display: flex; height: calc(100vh - 45px); }
+        :root { --bg: #f4f4f4; --panel: #ffffff; --accent: #000; --border: #ccc; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #000; overflow: hidden; }
+        
+        /* Layout */
+        header { height: 50px; background: #fff; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 2px solid var(--accent); z-index: 100; position: relative; }
+        #main-container { display: flex; height: calc(100vh - 50px); position: relative; }
 
-        /* Sidebar */
-        #sidebar { width: 250px; background: #fdfdfd; border-right: 1px solid #ccc; overflow-y: auto; }
-        .cat-title { padding: 10px; font-size: 11px; font-weight: bold; background: #eee; color: #555; text-transform: uppercase; border-bottom: 1px solid #ccc; }
-        .block-tool { margin: 6px; padding: 8px; background: #fff; border: 1px solid #bbb; cursor: grab; font-size: 12px; border-radius: 2px; text-align: center; }
-        .block-tool:hover { background: #f9f9f9; border-color: #000; }
+        /* Sidebar & Sliding Tabs */
+        #sidebar { width: 80px; background: #fff; border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 10px; z-index: 50; }
+        .cat-icon { width: 50px; height: 50px; margin-bottom: 15px; background: #eee; border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; text-align: center; border-radius: 4px; transition: 0.2s; }
+        .cat-icon:hover, .cat-icon.active { background: var(--accent); color: #fff; }
+
+        #tab-panel { width: 220px; background: #fff; border-right: 1px solid var(--border); position: absolute; left: 80px; top: 0; bottom: 0; transform: translateX(-100%); transition: transform 0.3s ease; z-index: 40; overflow-y: auto; padding: 15px; box-shadow: 5px 0 15px rgba(0,0,0,0.05); }
+        #tab-panel.open { transform: translateX(0); }
+        .tab-header { font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 5px; }
 
         /* Workspace */
-        #workspace { flex: 2; position: relative; background: #fff; overflow: auto; padding: 40px; }
-        #trash { position: absolute; bottom: 20px; left: 270px; padding: 10px 20px; background: #cc0000; color: #fff; font-size: 12px; font-weight: bold; border-radius: 2px; cursor: pointer; z-index: 100; }
+        #workspace { flex: 1; position: relative; background: #fff; overflow: auto; padding: 60px; margin-left: 0; transition: margin-left 0.3s ease; }
+        #workspace.shifted { margin-left: 220px; }
 
-        /* Blocks */
-        .block { position: absolute; width: 230px; background: #fff; border: 1px solid #000; padding: 12px; z-index: 10; box-shadow: 2px 2px 0px #ccc; }
-        .block-main { border: 2px solid #000; min-height: 450px; width: 320px; background: #fafafa; }
-        .block-content { min-height: 250px; border: 1px dashed #888; margin-top: 10px; padding: 10px; background: #fff; }
+        /* Blocks Styling */
+        .block-tool { padding: 10px; background: #fff; border: 1px solid var(--border); cursor: grab; font-size: 11px; margin-bottom: 8px; border-radius: 3px; }
+        .block-tool:hover { border-color: #000; background: #f9f9f9; }
+
+        .block { position: absolute; width: 240px; background: #fff; border: 1px solid #000; padding: 15px; z-index: 10; box-shadow: 4px 4px 0px #ddd; font-size: 12px; }
+        .block-main { border: 3px solid #000; width: 400px; min-height: 600px; background: #fff; }
+        .block-content { min-height: 400px; border: 1px dashed #aaa; margin-top: 10px; padding: 10px; }
         
-        .block b { display: block; margin-bottom: 8px; font-size: 13px; border-bottom: 1px solid #eee; }
-        .block label { display: block; font-size: 10px; color: #666; margin-top: 8px; font-weight: bold; }
-        .block input, .block select { width: 100%; padding: 5px; margin-top: 4px; border: 1px solid #999; font-size: 11px; box-sizing: border-box; }
+        input, select, textarea { width: 100%; margin-top: 5px; padding: 5px; border: 1px solid #999; font-size: 11px; box-sizing: border-box; }
+        label { font-size: 10px; color: #555; font-weight: bold; margin-top: 10px; display: block; }
 
-        /* Preview */
-        #viewer { width: 340px; background: #fff; border-left: 1px solid #ccc; display: flex; flex-direction: column; }
-        #code-out { flex: 1; padding: 10px; font-family: monospace; font-size: 11px; background: #f4f4f4; overflow: auto; border: none; margin: 0; color: #333; }
-        .btn-export { background: #000; color: #fff; border: none; padding: 8px 15px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        /* Trash */
+        #trash { position: fixed; bottom: 20px; right: 400px; padding: 15px 30px; background: #ff0000; color: #fff; font-weight: bold; border-radius: 5px; cursor: pointer; border: 2px solid #000; z-index: 200; }
+
+        /* Code Viewer */
+        #viewer { width: 380px; background: #fff; border-left: 2px solid #000; display: flex; flex-direction: column; }
+        #code-out { flex: 1; padding: 15px; font-family: 'Courier New', monospace; font-size: 11px; background: #1e1e1e; color: #d4d4d4; overflow: auto; white-space: pre-wrap; }
+        .export-btn { background: #000; color: #fff; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-weight: bold;">GEMINI - BLOCK CODING</div>
-    <button class="btn-export" onclick="exportFile()">EXPORT HTML</button>
+    <div style="font-weight: 900; letter-spacing: 1px;">GEMINI EVERYTHING v4.0</div>
+    <button class="export-btn" onclick="exportFile()">DOWNLOAD BUNDLE</button>
 </header>
 
-<div id="app">
+<div id="main-container">
     <div id="sidebar">
-        <div class="cat-title">Basics</div>
-        <div class="block-tool" draggable="true" data-type="main">Main Page Container</div>
-        <div class="block-tool" draggable="true" data-type="h1">Heading</div>
-        <div class="block-tool" draggable="true" data-type="p">Text Paragraph</div>
-        
-        <div class="cat-title">Media</div>
-        <div class="block-tool" draggable="true" data-type="video">Video Element</div>
-        <div class="block-tool" draggable="true" data-type="img">Image Element</div>
-        
-        <div class="cat-title">Styling</div>
-        <div class="block-tool" draggable="true" data-type="bg">Background Settings</div>
+        <div class="cat-icon" onclick="openTab('root', this)">ROOT</div>
+        <div class="cat-icon" onclick="openTab('text', this)">TEXT</div>
+        <div class="cat-icon" onclick="openTab('media', this)">MEDIA</div>
+        <div class="cat-icon" onclick="openTab('forms', this)">FORMS</div>
+        <div class="cat-icon" onclick="openTab('crypto', this)">CRYPTO</div>
+        <div class="cat-icon" onclick="openTab('chaos', this)">CHAOS</div>
+    </div>
+
+    <div id="tab-panel">
+        <div id="tab-content"></div>
     </div>
 
     <div id="workspace">
-        <div id="trash">TRASH CAN</div>
+        <div id="trash">DRAG HERE TO DELETE</div>
     </div>
 
     <div id="viewer">
-        <div style="padding: 8px; background: #ddd; font-size: 10px; font-weight: bold;">SOURCE CODE</div>
+        <div style="padding: 10px; background: #333; color: #fff; font-size: 11px; font-weight: bold;">LIVE BUNDLE SOURCE</div>
         <pre id="code-out"></pre>
     </div>
 </div>
 
 <script>
     const ws = document.getElementById('workspace');
+    const tab = document.getElementById('tab-panel');
+    const tabContent = document.getElementById('tab-content');
     const codeOut = document.getElementById('code-out');
-    let draggedEl = null;
-    let offset = { x: 0, y: 0 };
+    let draggedEl = null, offset = { x: 0, y: 0 };
 
-    document.querySelectorAll('.block-tool').forEach(t => {
-        t.ondragstart = (e) => e.dataTransfer.setData('type', t.dataset.type);
-    });
+    const elements = {
+        root: ['Main Container', 'Section Divider', 'Grid Row', 'Flex Box'],
+        text: ['H1 Header', 'H2 Subheader', 'Paragraph', 'Blockquote', 'Unordered List', 'Ordered List', 'Code Snippet'],
+        media: ['Image (Local/URL)', 'Video (Local Only)', 'Audio (Local Only)', 'Canvas Element', 'SVG Shape'],
+        forms: ['Text Input', 'Password Input', 'Submit Button', 'Checkbox', 'Radio Group', 'Dropdown Menu', 'Textarea'],
+        crypto: ['Base64 Encoder', 'Caesar Cipher', 'AES Placeholder', 'Hashing Block'],
+        chaos: ['Chaos Popup', 'Infinite Alert', 'Screen Shake', 'Redirect Loop']
+    };
+
+    function openTab(cat, btn) {
+        const isOpen = tab.classList.contains('open');
+        document.querySelectorAll('.cat-icon').forEach(i => i.classList.remove('active'));
+        
+        if (isOpen && tab.dataset.current === cat) {
+            tab.classList.remove('open');
+            ws.classList.remove('shifted');
+        } else {
+            tab.dataset.current = cat;
+            tab.classList.add('open');
+            ws.classList.add('shifted');
+            btn.classList.add('active');
+            renderTools(cat);
+        }
+    }
+
+    function renderTools(cat) {
+        tabContent.innerHTML = `<div class="tab-header">${cat} Components</div>`;
+        elements[cat].forEach(el => {
+            const d = document.createElement('div');
+            d.className = 'block-tool';
+            d.innerText = el;
+            d.draggable = true;
+            d.dataset.type = el.toLowerCase().replace(/ /g, '_').replace(/[()]/g, '');
+            d.ondragstart = (e) => e.dataTransfer.setData('type', d.dataset.type);
+            tabContent.appendChild(d);
+        });
+    }
 
     ws.ondragover = (e) => e.preventDefault();
     ws.ondrop = (e) => {
         const type = e.dataTransfer.getData('type');
-        if (type) createBlock(type, e.clientX - 280, e.clientY - 80);
+        if (type) createBlock(type, e.clientX - 350, e.clientY - 100);
     };
 
     function createBlock(type, x, y) {
         const b = document.createElement('div');
-        b.className = 'block ' + (type === 'main' ? 'block-main' : '');
+        b.className = 'block ' + (type === 'main_container' ? 'block-main' : '');
         b.style.left = x + 'px'; b.style.top = y + 'px';
         b.dataset.type = type;
 
-        let ui = `<b>${type.toUpperCase()}</b>`;
+        let ui = `<b>${type.replace(/_/g,' ')}</b>`;
         
-        if (type === 'main') {
-            ui += `<div class="block-content"></div>`;
-        } else if (type === 'h1' || type === 'p') {
-            ui += `<label>Text Content</label><input type="text" value="New Content" oninput="update()">`;
-        } else if (type === 'video') {
-            ui += `<label>Source Mode</label>
-                   <select onchange="toggleVidFields(this)">
-                       <option value="url">Web URL / YouTube</option>
-                       <option value="local">Local File</option>
-                   </select>
-                   <div class="vid-url-field">
-                       <label>URL</label><input type="text" placeholder="https://..." oninput="update()">
-                       <label>YouTube Mode?</label><select onchange="update()"><option value="n">No</option><option value="y">Yes</option></select>
-                   </div>
-                   <div class="vid-local-field" style="display:none;">
-                       <label>Local Video File</label><input type="file" accept="video/*" onchange="handleFile(this)">
-                   </div>`;
-        } else if (type === 'img') {
-            ui += `<label>Source Mode</label><select onchange="toggleIn(this,0,1)"><option value="u">URL</option><option value="l">Local</option></select>
-                   <input type="text" placeholder="URL" oninput="update()"><input type="file" style="display:none" onchange="handleFile(this)">`;
-        } else if (type === 'bg') {
-            ui += `<label>Background Type</label><select onchange="toggleIn(this,0,1)"><option value="c">Color</option><option value="l">Local Image</option></select>
-                   <input type="color" onchange="update()"><input type="file" style="display:none" onchange="handleFile(this)">`;
-        }
+        if (type === 'main_container') ui += `<div class="block-content"></div>`;
+        else if (['h1_header','h2_subheader','paragraph','blockquote'].includes(type)) ui += `<label>Text Content</label><textarea oninput="update()"></textarea>`;
+        else if (type === 'image_local/url') ui += `<label>Mode</label><select onchange="update()"><option value="u">URL</option><option value="l">Local</option></select><input type="text" placeholder="URL" oninput="update()"><input type="file" onchange="handleFile(this)">`;
+        else if (type === 'video_local_only' || type === 'audio_local_only') ui += `<label>Upload File</label><input type="file" onchange="handleFile(this)">`;
+        else if (type === 'base64_encoder' || type === 'caesar_cipher') ui += `<label>Input Text</label><input type="text" value="Secret" oninput="update()"><label>Key/Shift</label><input type="number" value="3" oninput="update()">`;
+        else if (type === 'chaos_popup') ui += `<label>Trigger Text</label><input type="text" value="GO" oninput="update()"><label>Img URL</label><input type="text" value="https://via.placeholder.com/150" oninput="update()">`;
+        else ui += `<label>Label</label><input type="text" value="Default" oninput="update()">`;
 
         b.innerHTML = ui;
-        b.onmousedown = (e) => { if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') { draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; b.style.zIndex = 1000; } };
+        b.onmousedown = (e) => { if(!['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) { draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; b.style.zIndex = 1000; } };
         ws.appendChild(b);
-        update();
-    }
-
-    function toggleVidFields(sel) {
-        const p = sel.parentElement;
-        p.querySelector('.vid-url-field').style.display = sel.value === 'url' ? 'block' : 'none';
-        p.querySelector('.vid-local-field').style.display = sel.value === 'local' ? 'block' : 'none';
-        update();
-    }
-
-    function toggleIn(sel, idx1, idx2) {
-        const ins = sel.parentElement.querySelectorAll('input');
-        ins[idx1].style.display = sel.value === 'u' || sel.value === 'c' ? 'block' : 'none';
-        ins[idx2].style.display = sel.value === 'l' ? 'block' : 'none';
         update();
     }
 
@@ -142,8 +156,8 @@
 
     window.onmousemove = (e) => {
         if (!draggedEl) return;
-        let x = e.clientX - offset.x - 240;
-        let y = e.clientY - offset.y - 45;
+        let x = e.clientX - offset.x - (tab.classList.contains('open') ? 300 : 80);
+        let y = e.clientY - offset.y - 50;
         draggedEl.style.left = x + 'px'; draggedEl.style.top = y + 'px';
 
         const main = document.querySelector('.block-main');
@@ -152,8 +166,6 @@
             if (e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom) {
                 main.querySelector('.block-content').appendChild(draggedEl);
                 draggedEl.style.position = 'relative'; draggedEl.style.left = '0'; draggedEl.style.top = '0';
-            } else if (draggedEl.parentElement !== ws) {
-                ws.appendChild(draggedEl); draggedEl.style.position = 'absolute';
             }
         }
     };
@@ -167,49 +179,39 @@
 
     function update() {
         const main = document.querySelector('.block-main');
-        if (!main) { codeOut.innerText = "Add Main Container to start."; return; }
+        if (!main) { codeOut.innerText = "Drag Root -> Main Container to begin."; return; }
         
-        let html = "", css = "body { background: white; text-align: center; font-family: sans-serif; padding: 20px; }", js = "";
+        let html = "", css = "body{text-align:center;font-family:sans-serif;padding:50px;} .chaos{animation: shake 0.5s infinite;} @keyframes shake{0%{margin-left:0} 25%{margin-left:5px} 50%{margin-left:0} 75%{margin-left:-5px} 100%{margin-left:0}}", js = "";
         const items = main.querySelectorAll('.block');
 
         items.forEach(i => {
             const t = i.dataset.type;
-            const ins = i.querySelectorAll('input, select');
+            const ins = i.querySelectorAll('input, select, textarea');
             
-            if (t === 'h1') html += `  <h1>${ins[0].value}</h1>\n`;
-            if (t === 'p') html += `  <p>${ins[0].value}</p>\n`;
-            if (t === 'img') {
+            if (t === 'h1_header') html += `<h1>${ins[0].value}</h1>\n`;
+            if (t === 'paragraph') html += `<p>${ins[0].value}</p>\n`;
+            if (t === 'image_local/url') {
                 const src = ins[0].value === 'u' ? ins[1].value : (ins[2].dataset.base64 || "");
-                html += `  <img src="${src}" style="max-width:100%; margin:10px;">\n`;
+                html += `<img src="${src}" style="max-width:300px;">\n`;
             }
-            if (t === 'video') {
-                const mode = ins[0].value;
-                if (mode === 'url') {
-                    let url = ins[1].value;
-                    const isYT = ins[2].value === 'y';
-                    if (isYT) {
-                        url = url.replace("watch?v=", "embed/");
-                        html += `  <iframe width="100%" height="315" src="${url}" frameborder="0" allowfullscreen></iframe>\n`;
-                    } else {
-                        html += `  <video width="100%" controls><source src="${url}"></video>\n`;
-                    }
-                } else {
-                    const src = ins[3].dataset.base64 || "";
-                    html += `  <video width="100%" controls><source src="${src}"></video>\n`;
-                }
+            if (t === 'video_local_only') html += `<video controls width="100%"><source src="${ins[0].dataset.base64 || ''}"></video>\n`;
+            if (t === 'base64_encoder') {
+                html += `<div><strong>B64:</strong> <span id="b64-out"></span></div>\n`;
+                js += `document.getElementById('b64-out').innerText = btoa('${ins[0].value}');\n`;
             }
-            if (t === 'bg') {
-                if (ins[0].value === 'c') css = css.replace('white', ins[1].value);
-                else css += `body { background: url('${ins[2].dataset.base64}'); background-size: cover; }`;
+            if (t === 'chaos_popup') {
+                html += `<button onclick="launchChaos('${ins[1].value}')">${ins[0].value}</button>\n`;
             }
         });
 
-        codeOut.innerText = `<!DOCTYPE html>\n<html>\n<head>\n<style>\n${css}\n</style>\n</head>\n<body>\n${html}</body>\n</html>`;
+        js += `function launchChaos(img){ let w=window.open('','','width=200,height=200'); w.document.write('<img src="'+img+'" width="100%">'); setInterval(()=>w.moveTo(Math.random()*screen.width, Math.random()*screen.height),50); }`;
+
+        codeOut.innerText = `<!DOCTYPE html><html>\n<head><style>${css}</style></head>\n<body>\n${html}\n<script>${js}<\/script></body>\n</html>`;
     }
 
     function exportFile() {
-        const blob = new Blob([codeOut.innerText], {type:'text/html'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'index.html'; a.click();
+        const b = new Blob([codeOut.innerText], {type:'text/html'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'index.html'; a.click();
     }
 </script>
 </body>
