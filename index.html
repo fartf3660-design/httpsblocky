@@ -1,181 +1,166 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Easy Website Builder</title>
-    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <title>Gemini Block Coding Studio</title>
     <style>
-        body { background-color: #1a1a1a; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
-        header { background: #000; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; }
-        #main { display: flex; height: calc(100vh - 70px); }
-        #blocklyDiv { flex: 2; height: 100%; }
+        :root { --bg: #121212; --panel: #1e1e1e; --accent: #3399ff; --text: #e0e0e0; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
         
-        /* The Live Code Viewer Area */
-        #codeAreaWrapper { 
-            flex: 1; 
-            background: #111; 
-            display: flex; 
-            flex-direction: column; 
-            border-left: 2px solid #333; 
-        }
-        .code-title { background: #222; padding: 10px; font-size: 12px; color: #888; border-bottom: 1px solid #333; }
-        #codeDisplay { 
-            padding: 20px; 
-            font-family: 'Consolas', monospace; 
-            color: #00ff00; 
-            white-space: pre-wrap; 
-            margin: 0; 
-            font-size: 14px;
-            overflow-y: auto;
+        header { 
+            height: 60px; background: #000; display: flex; align-items: center; 
+            padding: 0 20px; justify-content: space-between; border-bottom: 2px solid #333;
         }
 
-        .bake-button { background: #3399ff; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        #editor-container { display: flex; height: calc(100vh - 60px); }
+
+        /* Sidebar / Toolbox */
+        #toolbox { 
+            width: 200px; background: var(--panel); border-right: 2px solid #333; 
+            padding: 15px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .block-template { 
+            padding: 10px; border-radius: 6px; cursor: grab; font-weight: bold; font-size: 13px;
+            user-select: none; border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Workspace */
+        #workspace { 
+            flex: 2; position: relative; overflow: auto; 
+            background-image: radial-gradient(#333 1px, transparent 1px);
+            background-size: 20px 20px; padding: 50px;
+        }
+
+        /* Live Code View */
+        #code-view { 
+            width: 350px; background: #0a0a0a; border-left: 2px solid #333; 
+            display: flex; flex-direction: column;
+        }
+        #code-header { padding: 10px; font-size: 12px; background: #222; color: #888; }
+        #code-output { flex: 1; padding: 20px; font-family: 'Consolas', monospace; color: #00ff00; white-space: pre-wrap; overflow-y: auto; }
+
+        /* Custom Block Styling */
+        .gemini-block { 
+            width: fit-content; min-width: 150px; padding: 12px; border-radius: 8px; 
+            margin-bottom: 8px; cursor: move; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .gemini-block input { 
+            background: rgba(0,0,0,0.3); border: 1px solid #555; color: white; 
+            padding: 4px; border-radius: 4px; font-size: 12px; margin-top: 5px; width: 130px;
+        }
+        .gemini-block .label { font-size: 11px; text-transform: uppercase; opacity: 0.8; margin-bottom: 4px; display: block;}
+        
+        /* Colors for different block types */
+        .type-root { background: #4a148c; border-left: 5px solid #ab47bc; }
+        .type-text { background: #1565c0; border-left: 5px solid #42a5f5; }
+        .type-media { background: #2e7d32; border-left: 5px solid #66bb6a; }
+        .type-button { background: #c62828; border-left: 5px solid #ef5350; }
+
+        .btn-save { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-size: 22px; font-weight: bold;">🚀 WEBSITE BLUEPRINT</div>
-    <button class="bake-button" onclick="downloadSite()">SAVE WEBSITE (.html)</button>
+    <div style="font-weight: bold; letter-spacing: 1px;">GEMINI - BLOCK CODING</div>
+    <button class="btn-save" onclick="exportHTML()">SAVE WEBSITE (.html)</button>
 </header>
 
-<div id="main">
-    <div id="blocklyDiv"></div>
-    <div id="codeAreaWrapper">
-        <div class="code-title">LIVE CODE VIEWER</div>
-        <pre id="codeDisplay">Start by dragging a block!</pre>
+<div id="editor-container">
+    <div id="toolbox">
+        <div style="font-size: 12px; color: #888; margin-bottom: 5px;">ELEMENTS</div>
+        <div class="block-template type-root" draggable="true" data-type="root">🏠 START PAGE</div>
+        <div class="block-template type-text" draggable="true" data-type="h1">🔠 BIG TEXT</div>
+        <div class="block-template type-text" draggable="true" data-type="p">🔡 SMALL TEXT</div>
+        <div class="block-template type-media" draggable="true" data-type="img">🖼️ PICTURE</div>
+        <div class="block-template type-button" draggable="true" data-type="btn">🔘 BUTTON</div>
+    </div>
+
+    <div id="workspace">
+        <!-- Dropped blocks go here -->
+    </div>
+
+    <div id="code-view">
+        <div id="code-header">LIVE HTML SOURCE</div>
+        <pre id="code-output"></pre>
     </div>
 </div>
 
-<xml id="toolbox" style="display: none">
-    <category name="1. START" colour="260">
-        <block type="start_box"></block>
-    </category>
-    <category name="2. TEXT" colour="200">
-        <block type="big_text"></block>
-        <block type="small_text"></block>
-    </category>
-    <category name="3. IMAGES" colour="100">
-        <block type="web_image"></block>
-        <block type="local_image"></block>
-    </category>
-    <category name="4. BUTTONS" colour="20">
-        <block type="click_button"></block>
-    </category>
-</xml>
-
 <script>
-    // --- 1. BLOCK DEFINITIONS ---
-    Blockly.Blocks['start_box'] = {
-        init: function() {
-            this.appendDummyInput().appendField("🏠 MAIN PAGE");
-            this.appendStatementInput("CONTENT").appendField("Put blocks here:");
-            this.setColour(260);
-        }
-    };
+    const workspace = document.getElementById('workspace');
+    const codeOutput = document.getElementById('code-output');
+    const toolboxBlocks = document.querySelectorAll('.block-template');
 
-    Blockly.Blocks['big_text'] = {
-        init: function() {
-            this.appendDummyInput().appendField("🔠 BIG TEXT").appendField(new Blockly.FieldTextInput("My Title"), "TEXT");
-            this.setPreviousStatement(true); this.setNextStatement(true);
-            this.setColour(200);
-        }
-    };
-
-    Blockly.Blocks['small_text'] = {
-        init: function() {
-            this.appendDummyInput().appendField("🔡 tiny text").appendField(new Blockly.FieldTextInput("Welcome to my site"), "TEXT");
-            this.setPreviousStatement(true); this.setNextStatement(true);
-            this.setColour(180);
-        }
-    };
-
-    Blockly.Blocks['web_image'] = {
-        init: function() {
-            this.appendDummyInput().appendField("🖼️ INTERNET IMAGE").appendField(new Blockly.FieldTextInput("https://tinyurl.com/yckp89u9"), "SRC");
-            this.setPreviousStatement(true); this.setNextStatement(true);
-            this.setColour(100);
-        }
-    };
-
-    Blockly.Blocks['local_image'] = {
-        init: function() {
-            this.appendDummyInput().appendField("📂 COMPUTER IMAGE").appendField(new Blockly.FieldTextInput("cat.jpg"), "FILE");
-            this.setPreviousStatement(true); this.setNextStatement(true);
-            this.setColour(120);
-        }
-    };
-
-    Blockly.Blocks['click_button'] = {
-        init: function() {
-            this.appendDummyInput().appendField("🔘 BUTTON").appendField(new Blockly.FieldTextInput("Click!"), "LABEL");
-            this.setPreviousStatement(true); this.setNextStatement(true);
-            this.setColour(20);
-        }
-    };
-
-    // --- 2. THE GENERATOR ENGINE ---
-    const htmlGenerator = new Blockly.Generator('HTML');
-
-    htmlGenerator['start_box'] = function(block) {
-        const content = htmlGenerator.statementToCode(block, 'CONTENT');
-        return `<!DOCTYPE html>\n<html>\n<body style="text-align:center; padding:50px;">\n${content}</body>\n</html>`;
-    };
-
-    htmlGenerator['big_text'] = function(block) {
-        return `  <h1>${block.getFieldValue('TEXT')}</h1>\n`;
-    };
-
-    htmlGenerator['small_text'] = function(block) {
-        return `  <p>${block.getFieldValue('TEXT')}</p>\n`;
-    };
-
-    htmlGenerator['web_image'] = function(block) {
-        return `  <img src="${block.getFieldValue('SRC')}" style="width:200px;">\n`;
-    };
-
-    htmlGenerator['local_image'] = function(block) {
-        return `  <img src="${block.getFieldValue('FILE')}" style="width:200px;">\n`;
-    };
-
-    htmlGenerator['click_button'] = function(block) {
-        return `  <button>${block.getFieldValue('LABEL')}</button>\n`;
-    };
-
-    // Fix for indentation/spacing
-    htmlGenerator.INDENT = "  ";
-
-    // --- 3. STARTING THE SYSTEM ---
-    const workspace = Blockly.inject('blocklyDiv', {
-        toolbox: document.getElementById('toolbox'),
-        theme: Blockly.Themes.Dark,
-        renderer: 'zelos'
+    // Handle Dragging from Toolbox
+    toolboxBlocks.forEach(block => {
+        block.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('type', block.dataset.type);
+        });
     });
 
-    // THIS FUNCTION FIXES THE LIVE VIEW
-    function refreshLiveCode() {
-        try {
-            const code = htmlGenerator.workspaceToCode(workspace);
-            document.getElementById('codeDisplay').innerText = code || "Drag the MAIN PAGE block out first!";
-        } catch (e) {
-            document.getElementById('codeDisplay').innerText = "Working on it...";
-        }
+    workspace.addEventListener('dragover', e => e.preventDefault());
+
+    workspace.addEventListener('drop', e => {
+        e.preventDefault();
+        const type = e.dataTransfer.getData('type');
+        if (type) createBlock(type, e.clientX - 250, e.clientY - 100);
+    });
+
+    function createBlock(type, x, y) {
+        const block = document.createElement('div');
+        block.className = `gemini-block type-${getBlockCategory(type)}`;
+        block.dataset.tag = type;
+        
+        let content = '';
+        if (type === 'root') content = `<b>🏠 MAIN PAGE</b><div class="container" style="min-height:50px; border:2px dashed #444; margin-top:10px; padding:10px;"></div>`;
+        else if (type === 'h1') content = `<span class="label">Big Title</span><input type="text" value="Hello World" oninput="generateCode()">`;
+        else if (type === 'p') content = `<span class="label">Paragraph</span><input type="text" value="Welcome to my site" oninput="generateCode()">`;
+        else if (type === 'img') content = `<span class="label">Image URL or File</span><input type="text" value="https://via.placeholder.com/150" oninput="generateCode()">`;
+        else if (type === 'btn') content = `<span class="label">Button Label</span><input type="text" value="Click Me" oninput="generateCode()">`;
+
+        block.innerHTML = content + `<button onclick="this.parentElement.remove(); generateCode();" style="position:absolute; top:5px; right:5px; background:none; border:none; color:white; cursor:pointer;">×</button>`;
+        
+        workspace.appendChild(block);
+        generateCode();
     }
 
-    workspace.addChangeListener(refreshLiveCode);
+    function getBlockCategory(type) {
+        if (type === 'root') return 'root';
+        if (type === 'h1' || type === 'p') return 'text';
+        if (type === 'img') return 'media';
+        return 'button';
+    }
 
-    // --- 4. EXPORTING ---
-    function downloadSite() {
-        const code = htmlGenerator.workspaceToCode(workspace);
-        if(!code.includes('<html>')) {
-            alert("Oops! You need to put everything inside the 'MAIN PAGE' block first!");
-            return;
-        }
+    function generateCode() {
+        const blocks = workspace.querySelectorAll('.gemini-block');
+        let html = '';
+        let hasRoot = false;
+
+        blocks.forEach(block => {
+            const tag = block.dataset.tag;
+            const input = block.querySelector('input');
+            const val = input ? input.value : '';
+
+            if (tag === 'root') {
+                hasRoot = true;
+                // For this simple version, we just wrap everything in the file
+            } else if (tag === 'h1') html += `  <h1>${val}</h1>\n`;
+            else if (tag === 'p') html += `  <p>${val}</p>\n`;
+            else if (tag === 'img') html += `  <img src="${val}" style="max-width:100%;">\n`;
+            else if (tag === 'btn') html += `  <button>${val}</button>\n`;
+        });
+
+        const fullCode = `<!DOCTYPE html>\n<html>\n<body style="font-family:sans-serif; text-align:center; padding:50px;">\n${html}</body>\n</html>`;
+        codeOutput.innerText = fullCode;
+    }
+
+    function exportHTML() {
+        const code = codeOutput.innerText;
         const blob = new Blob([code], {type: 'text/html'});
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'my_cool_site.html';
-        link.click();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'index.html';
+        a.click();
     }
 </script>
 
