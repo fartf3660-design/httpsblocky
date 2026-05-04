@@ -4,82 +4,59 @@
     <meta charset="UTF-8">
     <title>Gemini - Block Coding</title>
     <style>
-        :root { --bg: #f0f0f0; --panel: #e0e0e0; --accent: #0000ff; --text: #000; }
-        body { margin: 0; font-family: "Courier New", monospace; background: var(--bg); color: var(--text); overflow: hidden; }
-        
-        header { 
-            height: 40px; background: #ccc; display: flex; align-items: center; 
-            padding: 0 10px; justify-content: space-between; border-bottom: 2px solid #888;
-        }
+        body { margin: 0; font-family: sans-serif; background: #f4f4f4; color: #333; overflow: hidden; }
+        header { height: 50px; background: #ffffff; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 1px solid #ddd; }
+        #app { display: flex; height: calc(100vh - 50px); }
 
-        #app { display: flex; height: calc(100vh - 40px); }
-
-        /* Sidebar with Categories */
-        #sidebar { width: 250px; background: var(--panel); border-right: 2px solid #888; overflow-y: auto; }
-        .cat-group { border-bottom: 1px solid #bbb; padding-bottom: 10px; }
-        .cat-title { padding: 8px; font-size: 12px; font-weight: bold; background: #d0d0d0; border-bottom: 1px solid #888; }
-        .block-tool { 
-            margin: 4px 8px; padding: 6px; background: #fff; border: 1px solid #888;
-            cursor: grab; font-size: 11px; text-align: center;
-        }
-        .block-tool:hover { background: #eee; }
+        /* Sidebar */
+        #sidebar { width: 260px; background: #fff; border-right: 1px solid #ddd; overflow-y: auto; }
+        .cat-title { padding: 12px; font-size: 13px; font-weight: bold; background: #f9f9f9; border-bottom: 1px solid #eee; color: #666; }
+        .block-tool { margin: 8px; padding: 10px; background: #fff; border: 1px solid #ccc; cursor: grab; font-size: 13px; border-radius: 4px; text-align: center; }
+        .block-tool:hover { border-color: #3d5afe; background: #f0f4ff; }
 
         /* Workspace */
-        #workspace { flex: 2; position: relative; background: #fff; overflow: auto; }
-        
-        /* Code View */
-        #viewer { width: 300px; background: #eee; border-left: 2px solid #888; display: flex; flex-direction: column; }
-        #code-out { flex: 1; padding: 10px; font-size: 11px; white-space: pre-wrap; overflow: auto; color: #000; }
+        #workspace { flex: 2; position: relative; background: #eee; overflow: auto; padding: 50px; }
+        #trash { position: absolute; bottom: 20px; left: 280px; padding: 15px 25px; background: #ff4444; color: #fff; font-weight: bold; border-radius: 4px; cursor: pointer; z-index: 100; }
 
-        /* Blocks */
-        .block { 
-            position: absolute; width: 220px; background: #fff; border: 2px solid #000; 
-            padding: 8px; z-index: 10; font-size: 12px;
-        }
-        .block-main { background: #ffffcc; min-height: 300px; width: 300px; z-index: 5; }
-        .block-content { min-height: 100px; border: 1px dashed #000; margin-top: 5px; padding: 5px; }
+        /* Real Blocks */
+        .block { position: absolute; width: 240px; background: #fff; border: 1px solid #999; padding: 15px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; }
+        .block-main { border: 2px solid #3d5afe; min-height: 400px; width: 320px; }
+        .block-content { min-height: 200px; border: 2px dashed #ccc; margin-top: 10px; padding: 10px; border-radius: 4px; background: #fafafa; }
         
-        input, select { width: 100%; margin-top: 4px; font-family: monospace; font-size: 10px; border: 1px solid #000; }
-        label { font-size: 9px; font-weight: bold; display: block; margin-top: 6px; }
+        .block b { display: block; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .block label { display: block; font-size: 11px; color: #777; margin-top: 8px; font-weight: bold; }
+        .block input, .block select { width: 100%; padding: 6px; margin-top: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px; box-sizing: border-box; }
 
-        #trash { position: absolute; bottom: 10px; left: 260px; width: 80px; padding: 10px; background: #ff0000; color: #fff; text-align: center; font-weight: bold; border: 2px solid #000; cursor: pointer; }
+        /* Preview */
+        #viewer { width: 350px; background: #fff; border-left: 1px solid #ddd; display: flex; flex-direction: column; }
+        #code-out { flex: 1; padding: 15px; font-family: monospace; font-size: 12px; background: #f8f8f8; overflow: auto; border: none; margin: 0; }
+        .btn-save { background: #3d5afe; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-weight: bold;">GEMINI_BLOCK_CODING_V3</div>
-    <button onclick="exportFile()" style="cursor:pointer;">[SAVE_PROJECT]</button>
+    <div style="font-weight: bold;">Gemini - Block Coding</div>
+    <button class="btn-save" onclick="exportFile()">Download HTML</button>
 </header>
 
 <div id="app">
     <div id="sidebar">
-        <div class="cat-group">
-            <div class="cat-title">STRUCTURE</div>
-            <div class="block-tool" draggable="true" data-type="main">Main Page</div>
-            <div class="block-tool" draggable="true" data-type="div">Box Container</div>
-        </div>
-        <div class="cat-group">
-            <div class="cat-title">TEXT</div>
-            <div class="block-tool" draggable="true" data-type="h1">Large Header</div>
-            <div class="block-tool" draggable="true" data-type="p">Paragraph</div>
-            <div class="block-tool" draggable="true" data-type="link">Hyperlink</div>
-        </div>
-        <div class="cat-group">
-            <div class="cat-title">MEDIA</div>
-            <div class="block-tool" draggable="true" data-type="img">Image (URL/Local)</div>
-            <div class="block-tool" draggable="true" data-type="video">Video URL</div>
-        </div>
-        <div class="cat-group">
-            <div class="cat-title">STYLE</div>
-            <div class="block-tool" draggable="true" data-type="bg">Background Settings</div>
-            <div class="block-tool" draggable="true" data-type="border">Border Settings</div>
-        </div>
-        <div class="cat-group">
-            <div class="cat-title" style="background:#ffcc00;">CHAOS PANEL</div>
-            <div class="block-tool" draggable="true" data-type="chaos_btn">Chaos Popup Button</div>
-            <div class="block-tool" draggable="true" data-type="chaos_img">Moving Image</div>
-        </div>
+        <div class="cat-title">Structure</div>
+        <div class="block-tool" draggable="true" data-type="main">Main Page Container</div>
+        
+        <div class="cat-title">Content</div>
+        <div class="block-tool" draggable="true" data-type="h1">Header Text</div>
+        <div class="block-tool" draggable="true" data-type="p">Paragraph</div>
+        <div class="block-tool" draggable="true" data-type="link">Hyperlink</div>
+        <div class="block-tool" draggable="true" data-type="img">Image (URL/Local)</div>
+        <div class="block-tool" draggable="true" data-type="video">Video (YouTube URL)</div>
+        
+        <div class="cat-title">Style</div>
+        <div class="block-tool" draggable="true" data-type="bg">Page Background</div>
+        
+        <div class="cat-title">Chaos Panel</div>
+        <div class="block-tool" draggable="true" data-type="chaos_btn">Chaos Popup Button</div>
     </div>
 
     <div id="workspace">
@@ -87,7 +64,7 @@
     </div>
 
     <div id="viewer">
-        <div style="padding: 5px; background: #ccc; font-size: 10px; border-bottom: 1px solid #888;">RAW_SOURCE</div>
+        <div style="padding: 10px; background: #eee; font-size: 11px; font-weight: bold;">LIVE SOURCE</div>
         <pre id="code-out"></pre>
     </div>
 </div>
@@ -105,7 +82,7 @@
     ws.ondragover = (e) => e.preventDefault();
     ws.ondrop = (e) => {
         const type = e.dataTransfer.getData('type');
-        if (type) createBlock(type, e.clientX - 260, e.clientY - 50);
+        if (type) createBlock(type, e.clientX - 300, e.clientY - 100);
     };
 
     function createBlock(type, x, y) {
@@ -114,27 +91,52 @@
         b.style.left = x + 'px'; b.style.top = y + 'px';
         b.dataset.type = type;
 
-        let html = `<b>${type.toUpperCase()}</b>`;
-        if (type === 'main' || type === 'div') html += `<div class="block-content"></div>`;
-        else if (type === 'h1' || type === 'p') html += `<input type="text" value="Text Here" oninput="update()">`;
-        else if (type === 'link') html += `<label>Text</label><input type="text" value="Click" oninput="update()"><label>URL</label><input type="text" value="http://" oninput="update()">`;
-        else if (type === 'img') html += `<select onchange="update()"><option value="url">URL</option><option value="local">Local</option></select><input type="text" placeholder="URL" oninput="update()"><input type="file" style="display:none" onchange="handleFile(this)">`;
-        else if (type === 'bg') html += `<select onchange="toggleBg(this)"><option value="color">Color</option><option value="url">Image URL</option><option value="local">Local Image</option></select><input type="color" onchange="update()"><input type="text" style="display:none" oninput="update()"><input type="file" style="display:none" onchange="handleFile(this)">`;
-        else if (type === 'chaos_btn') html += `<label>Button Text</label><input type="text" value="DANGER"><label>Popup Image URL</label><input type="text" value="https://bit.ly/3yL"><label>Movement</label><select onchange="update()"><option value="none">None</option><option value="dvd">DVD Bounce</option><option value="crazy">Crazy</option></select>`;
-        else if (type === 'chaos_img') html += `<label>Image URL</label><input type="text" value="https://bit.ly/3yL"><label>Speed</label><select onchange="update()"><option value="dvd">DVD</option><option value="jit">Little Movement</option></select>`;
+        let ui = `<b>${type.toUpperCase().replace('_', ' ')}</b>`;
+        
+        if (type === 'main') {
+            ui += `<div class="block-content"></div>`;
+        } else if (type === 'h1' || type === 'p') {
+            ui += `<label>Text Content</label><input type="text" value="New Text" oninput="update()">`;
+        } else if (type === 'link') {
+            ui += `<label>Label</label><input type="text" value="Click Me" oninput="update()">
+                   <label>URL</label><input type="text" value="https://google.com" oninput="update()">`;
+        } else if (type === 'img') {
+            ui += `<label>Mode</label><select onchange="toggleInput(this, '.url-in', '.file-in')"><option value="url">URL</option><option value="local">Local</option></select>
+                   <input class="url-in" type="text" placeholder="URL" oninput="update()">
+                   <input class="file-in" type="file" style="display:none" onchange="handleFile(this)">`;
+        } else if (type === 'video') {
+            ui += `<label>YouTube URL</label><input type="text" value="https://www.youtube.com/embed/dQw4w9WgXcQ" oninput="update()">`;
+        } else if (type === 'bg') {
+            ui += `<label>Mode</label><select onchange="toggleBg(this)"><option value="color">Color</option><option value="local">Local Image</option></select>
+                   <input class="bg-c" type="color" onchange="update()">
+                   <input class="bg-f" type="file" style="display:none" onchange="handleFile(this)">`;
+        } else if (type === 'chaos_btn') {
+            ui += `<label>Button Text</label><input type="text" value="SURPRISE" oninput="update()">
+                   <label>Popup Image URL</label><input type="text" value="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJ6bmN6Z3Z6Z3Z6Z3Z6Z3Z/3o7TKSjPQC1IdR9Bpm/giphy.gif" oninput="update()">
+                   <label>Movement</label><select onchange="update()"><option value="none">Stay Still</option><option value="dvd">DVD Bounce</option><option value="crazy">Crazy Jitter</option></select>`;
+        }
 
-        b.innerHTML = html + `<div style="font-size:8px; color:red; margin-top:5px;">DRAG TO MOVE / TRASH</div>`;
-        b.onmousedown = (e) => { if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') { draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; b.style.zIndex = 100; } };
+        b.innerHTML = ui;
+        b.onmousedown = (e) => { 
+            if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') { 
+                draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; b.style.zIndex = 1000;
+            } 
+        };
         ws.appendChild(b);
+        update();
+    }
+
+    function toggleInput(sel, c1, c2) {
+        const p = sel.parentElement;
+        p.querySelector(c1).style.display = sel.value === 'url' ? 'block' : 'none';
+        p.querySelector(c2).style.display = sel.value === 'local' ? 'block' : 'none';
         update();
     }
 
     function toggleBg(sel) {
         const p = sel.parentElement;
-        p.querySelectorAll('input').forEach(i => i.style.display = 'none');
-        if (sel.value === 'color') p.querySelector('input[type="color"]').style.display = 'block';
-        if (sel.value === 'url') p.querySelector('input[type="text"]').style.display = 'block';
-        if (sel.value === 'local') p.querySelector('input[type="file"]').style.display = 'block';
+        p.querySelector('.bg-c').style.display = sel.value === 'color' ? 'block' : 'none';
+        p.querySelector('.bg-f').style.display = sel.value === 'local' ? 'block' : 'none';
         update();
     }
 
@@ -146,9 +148,9 @@
 
     window.onmousemove = (e) => {
         if (!draggedEl) return;
-        let x = e.clientX - 250 - offset.x;
-        let y = e.clientY - 40 - offset.y;
-        draggedEl.style.left = x + 'px'; draggedEl.style.top = y + 'px';
+        let x = e.clientX - offset.x;
+        let y = e.clientY - offset.y;
+        draggedEl.style.left = (x - 260) + 'px'; draggedEl.style.top = (y - 50) + 'px';
 
         const main = document.querySelector('.block-main');
         if (main && draggedEl !== main) {
@@ -157,7 +159,7 @@
                 main.querySelector('.block-content').appendChild(draggedEl);
                 draggedEl.style.position = 'relative'; draggedEl.style.left = '0'; draggedEl.style.top = '0';
             } else if (draggedEl.parentElement !== ws) {
-                ws.appendChild(draggedEl); draggedEl.style.position = 'absolute'; draggedEl.style.left = x + 'px'; draggedEl.style.top = y + 'px';
+                ws.appendChild(draggedEl); draggedEl.style.position = 'absolute'; 
             }
         }
     };
@@ -171,54 +173,44 @@
 
     function update() {
         const main = document.querySelector('.block-main');
-        if (!main) { codeOut.innerText = "Add Main Page Block"; return; }
+        if (!main) { codeOut.innerText = "Drag 'Main Page Container' to start."; return; }
         
-        let html = "", css = "body { background: white; text-align: center; font-family: sans-serif; }", js = "";
-        const items = main.querySelectorAll('.block');
+        let html = "", css = "body { background: white; text-align: center; }", js = "";
+        const children = main.querySelectorAll('.block');
 
-        items.forEach(i => {
-            const t = i.dataset.type;
-            const vals = Array.from(i.querySelectorAll('input, select')).map(v => v.value);
+        children.forEach(c => {
+            const t = c.dataset.type;
+            const inputs = c.querySelectorAll('input, select');
             
-            if (t === 'h1') html += `<h1>${vals[0]}</h1>\n`;
-            if (t === 'p') html += `<p>${vals[0]}</p>\n`;
+            if (t === 'h1') html += `  <h1>${inputs[0].value}</h1>\n`;
+            if (t === 'p') html += `  <p>${inputs[0].value}</p>\n`;
+            if (t === 'link') html += `  <a href="${inputs[1].value}">${inputs[0].value}</a><br>\n`;
+            if (t === 'img') {
+                const src = inputs[0].value === 'url' ? inputs[1].value : (inputs[2].dataset.base64 || "");
+                html += `  <img src="${src}" style="max-width:80%; margin-top:20px;">\n`;
+            }
+            if (t === 'video') {
+                const vidUrl = inputs[0].value.replace("watch?v=", "embed/");
+                html += `  <iframe width="560" height="315" src="${vidUrl}" frameborder="0"></iframe>\n`;
+            }
             if (t === 'bg') {
-                const mode = i.querySelector('select').value;
-                if (mode === 'color') css = css.replace('white', i.querySelector('input[type="color"]').value);
-                if (mode === 'url') css += `body { background: url('${i.querySelector('input[type="text"]').value}'); background-size: cover; }`;
-                if (mode === 'local') css += `body { background: url('${i.querySelector('input[type="file"]').dataset.base64}'); background-size: cover; }`;
+                if (inputs[0].value === 'color') css = css.replace('white', inputs[1].value);
+                else css += `body { background: url('${inputs[2].dataset.base64}'); background-size: cover; }`;
             }
             if (t === 'chaos_btn') {
-                const id = "btn" + Math.floor(Math.random()*999);
-                html += `<button id="${id}" onclick="alert('CHAOS!');" style="position:absolute;">${vals[0]}</button>\n`;
-                if(vals[2] === 'dvd') js += `animateDVD('${id}');\n`;
-                if(vals[2] === 'crazy') js += `animateCrazy('${id}');\n`;
+                const id = "chaos" + Math.floor(Math.random()*1000);
+                html += `  <button id="${id}" onclick="showPopup('${inputs[1].value}')" style="position:absolute; padding:10px;">${inputs[0].value}</button>\n`;
+                if(inputs[2].value === 'dvd') js += `  startDVD('${id}');\n`;
+                if(inputs[2].value === 'crazy') js += `  startCrazy('${id}');\n`;
             }
         });
 
-        const chaosJS = `
-        function animateDVD(id){
-            let el = document.getElementById(id); let x=0, y=0, dx=2, dy=2;
-            setInterval(() => {
-                x+=dx; y+=dy; if(x+el.offsetWidth > window.innerWidth || x < 0) dx*=-1;
-                if(y+el.offsetHeight > window.innerHeight || y < 0) dy*=-1;
-                el.style.left = x+'px'; el.style.top = y+'px';
-            }, 10);
-        }
-        function animateCrazy(id){
-            let el = document.getElementById(id);
-            setInterval(() => {
-                el.style.left = Math.random()*window.innerWidth+'px';
-                el.style.top = Math.random()*window.innerHeight+'px';
-            }, 100);
-        }`;
-
-        codeOut.innerText = `<!DOCTYPE html>\n<html>\n<head>\n<style>\n${css}\n</style>\n</head>\n<body>\n${html}\n<script>\n${chaosJS}\n${js}<\/script>\n</body>\n</html>`;
+        codeOut.innerText = `<!DOCTYPE html>\n<html>\n<head>\n<style>\n${css}\n</style>\n</head>\n<body>\n${html}\n<script>\nfunction showPopup(url){ let win = window.open("", "Popup", "width=400,height=400"); win.document.write('<img src="'+url+'" style="width:100%">'); }\nfunction startDVD(id){ let el=document.getElementById(id); let x=0,y=0,dx=2,dy=2; setInterval(()=>{ x+=dx; y+=dy; if(x+el.offsetWidth>window.innerWidth||x<0) dx*=-1; if(y+el.offsetHeight>window.innerHeight||y<0) dy*=-1; el.style.left=x+'px'; el.style.top=y+'px'; },10); }\nfunction startCrazy(id){ let el=document.getElementById(id); setInterval(()=>{ el.style.left=Math.random()*(window.innerWidth-100)+'px'; el.style.top=Math.random()*(window.innerHeight-100)+'px'; },100); }\n${js}<\/script>\n</body>\n</html>`;
     }
 
     function exportFile() {
         const b = new Blob([codeOut.innerText], {type:'text/html'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'my_chaos_site.html'; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'index.html'; a.click();
     }
 </script>
 </body>
