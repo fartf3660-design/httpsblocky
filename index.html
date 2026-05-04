@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <title>Gemini - Ultra Block Engine</title>
     <style>
-        :root { --accent: #222; --bg: #f0f0f0; --sidebar-w: 80px; --panel-w: 240px; }
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); overflow: hidden; }
+        :root { --accent: #000; --bg: #f0f0f0; --sidebar-w: 80px; --panel-w: 240px; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); overflow: hidden; }
         
-        /* Layout Structure */
-        header { height: 50px; background: #000; color: #fff; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; z-index: 100; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        header { height: 50px; background: #000; color: #fff; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; z-index: 100; position: relative; }
         #main-container { display: flex; height: calc(100vh - 50px); position: relative; }
 
         /* Sidebar & Sliding Panels */
@@ -16,46 +15,40 @@
         .cat-btn { width: 60px; height: 60px; margin-bottom: 10px; background: #333; color: #aaa; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; border-radius: 8px; border: none; transition: 0.2s; }
         .cat-btn:hover, .cat-btn.active { background: #fff; color: #000; transform: scale(1.05); }
 
-        #tab-panel { width: var(--panel-w); background: #fff; border-right: 1px solid #ccc; position: absolute; left: var(--sidebar-w); top: 0; bottom: 0; transform: translateX(-110%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 50; overflow-y: auto; padding: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
+        #tab-panel { width: var(--panel-w); background: #fff; border-right: 1px solid #ccc; position: absolute; left: var(--sidebar-w); top: 0; bottom: 0; transform: translateX(-110%); transition: transform 0.4s; z-index: 50; overflow-y: auto; padding: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
         #tab-panel.open { transform: translateX(0); }
-        .tab-title { font-size: 14px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px; border-left: 4px solid #000; padding-left: 10px; }
-
-        /* Component Blocks in Panel */
         .tool { padding: 12px; background: #f9f9f9; border: 1px solid #ddd; cursor: grab; font-size: 12px; margin-bottom: 10px; border-radius: 5px; font-weight: 600; color: #444; }
-        .tool:hover { background: #000; color: #fff; border-color: #000; }
+        .tool:hover { background: #000; color: #fff; }
 
-        /* Workspace & Canvas */
-        #workspace { flex: 1; position: relative; background: #fff; overflow: auto; padding: 80px; transition: margin-left 0.4s ease; }
+        /* Workspace */
+        #workspace { flex: 1; position: relative; background: #fff; overflow: auto; padding: 80px; }
         .block { position: absolute; width: 250px; background: #fff; border: 2px solid #000; padding: 15px; z-index: 10; box-shadow: 5px 5px 0px #eee; }
         .block-main { width: 450px; min-height: 700px; border: 4px solid #000; background: #fff; }
-        .drop-zone { min-height: 500px; border: 2px dashed #ccc; margin-top: 15px; padding: 15px; background: #fafafa; }
+        .drop-zone { min-height: 600px; border: 2px dashed #ccc; margin-top: 15px; padding: 15px; background: #fafafa; }
 
-        /* Input Styling */
-        input, select, textarea { width: 100%; margin-top: 6px; padding: 8px; border: 1px solid #bbb; font-size: 12px; border-radius: 4px; box-sizing: border-box; }
-        label { font-size: 11px; color: #777; font-weight: bold; margin-top: 12px; display: block; text-transform: uppercase; }
+        label { font-size: 10px; color: #777; font-weight: bold; margin-top: 10px; display: block; text-transform: uppercase; }
+        input, select, textarea { width: 100%; margin-top: 5px; padding: 8px; border: 1px solid #bbb; font-size: 12px; box-sizing: border-box; }
 
         /* Controls */
-        #trash { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 40px; background: #ff3e3e; color: #fff; font-weight: bold; border-radius: 50px; cursor: pointer; border: 3px solid #000; z-index: 200; box-shadow: 0 4px 15px rgba(255,0,0,0.3); }
+        #trash { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 40px; background: #ff3e3e; color: #fff; font-weight: bold; border-radius: 50px; cursor: pointer; border: 3px solid #000; z-index: 200; }
         #viewer { width: 400px; background: #222; border-left: 2px solid #000; display: flex; flex-direction: column; }
-        #code-out { flex: 1; padding: 15px; font-family: 'Consolas', monospace; font-size: 11px; color: #00ff41; overflow: auto; white-space: pre-wrap; margin: 0; }
-        .btn-exp { background: #00ff41; color: #000; border: none; padding: 10px 25px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        #code-out { flex: 1; padding: 15px; font-family: monospace; font-size: 11px; color: #00ff41; overflow: auto; white-space: pre-wrap; margin: 0; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-size: 18px; font-weight: 900;">GEMINI UNLIMITED v5.0</div>
-    <button class="btn-exp" onclick="exportFile()">GENERATE index.html</button>
+    <div style="font-weight: 900;">GEMINI BLOCK ENGINE v6.0</div>
+    <button style="background:#00ff41; border:none; padding:10px; font-weight:bold; cursor:pointer;" onclick="exportFile()">EXPORT index.html</button>
 </header>
 
 <div id="main-container">
     <div id="sidebar">
-        <button class="cat-btn" onclick="toggleTab('structure', this)">📦<br>CORE</button>
-        <button class="cat-btn" onclick="toggleTab('content', this)">✍️<br>TEXT</button>
-        <button class="cat-btn" onclick="toggleTab('media', this)">🎬<br>MEDIA</button>
-        <button class="cat-btn" onclick="toggleTab('forms', this)">📝<br>FORMS</button>
-        <button class="cat-btn" onclick="toggleTab('logic', this)">🔐<br>LOGIC</button>
-        <button class="cat-btn" onclick="toggleTab('fx', this)">🔥<br>FX</button>
+        <button class="cat-btn" onclick="toggleTab('core', this)">📦 CORE</button>
+        <button class="cat-btn" onclick="toggleTab('text', this)">✍️ TEXT</button>
+        <button class="cat-btn" onclick="toggleTab('forms', this)">📝 FORMS</button>
+        <button class="cat-btn" onclick="toggleTab('logic', this)">🔐 LOGIC</button>
+        <button class="cat-btn" onclick="toggleTab('media', this)">🎬 MEDIA</button>
     </div>
 
     <div id="tab-panel">
@@ -63,11 +56,10 @@
     </div>
 
     <div id="workspace">
-        <div id="trash">🗑️ DROP HERE TO DELETE</div>
+        <div id="trash">🗑️ TRASH</div>
     </div>
 
     <div id="viewer">
-        <div style="padding: 10px; background: #111; color: #aaa; font-size: 10px; font-weight: bold;">LIVE HTML OUTPUT</div>
         <pre id="code-out"></pre>
     </div>
 </div>
@@ -80,12 +72,11 @@
     let draggedEl = null, offset = { x: 0, y: 0 };
 
     const library = {
-        structure: ['Main Website Wrapper', 'Section Header', 'Navigation Bar', '3-Column Row', 'Footer Bar'],
-        content: ['Main Heading (H1)', 'Sub-heading (H2)', 'Rich Paragraph', 'Quote Block', 'Bullet List', 'Code Box'],
-        media: ['Image (URL or Local)', 'Video (Strict Local)', 'Audio (Strict Local)', 'YouTube Embed'],
-        forms: ['Contact Form', 'Text Input', 'Search Bar', 'Checkbox List', 'Submit Button'],
-        logic: ['Base64 Encoder', 'Caesar Cipher Decoder', 'Date & Time Script', 'Password Protect'],
-        fx: ['Confetti Trigger', 'Chaos Popups', 'Matrix Rain Background', 'Floating Animation']
+        core: ['Main Container', 'Navigation Bar', 'Footer'],
+        text: ['Heading H1', 'Subhead H2', 'Paragraph', 'Bullet List'],
+        forms: ['Contact Form', 'Simple Button', 'Input Field'],
+        logic: ['Password Lock', 'Base64 Encoder', 'Caesar Cipher'],
+        media: ['Local Video', 'Local Audio', 'Web Image']
     };
 
     function toggleTab(cat, btn) {
@@ -93,24 +84,16 @@
         if (panel.classList.contains('open') && panel.dataset.cat === cat) {
             panel.classList.remove('open');
         } else {
-            panel.dataset.cat = cat;
-            panel.classList.add('open');
-            btn.classList.add('active');
-            renderTools(cat);
+            panel.dataset.cat = cat; panel.classList.add('open'); btn.classList.add('active');
+            tabContent.innerHTML = `<div style="font-weight:bold; margin-bottom:10px;">${cat.toUpperCase()}</div>`;
+            library[cat].forEach(name => {
+                const t = document.createElement('div');
+                t.className = 'tool'; t.innerText = name; t.draggable = true;
+                t.dataset.type = name.toLowerCase().replace(/ /g, '_');
+                t.ondragstart = (e) => e.dataTransfer.setData('type', t.dataset.type);
+                tabContent.appendChild(t);
+            });
         }
-    }
-
-    function renderTools(cat) {
-        tabContent.innerHTML = `<div class="tab-title">${cat} Components</div>`;
-        library[cat].forEach(name => {
-            const t = document.createElement('div');
-            t.className = 'tool';
-            t.innerText = name;
-            t.draggable = true;
-            t.dataset.type = name.toLowerCase().replace(/ /g, '_').replace(/[()]/g, '');
-            t.ondragstart = (e) => e.dataTransfer.setData('type', t.dataset.type);
-            tabContent.appendChild(t);
-        });
     }
 
     ws.ondragover = (e) => e.preventDefault();
@@ -121,24 +104,25 @@
 
     function createBlock(type, x, y) {
         const b = document.createElement('div');
-        b.className = 'block ' + (type === 'main_website_wrapper' ? 'block-main' : '');
+        b.className = 'block ' + (type === 'main_container' ? 'block-main' : '');
         b.style.left = x + 'px'; b.style.top = y + 'px';
         b.dataset.type = type;
 
         let ui = `<b>${type.replace(/_/g,' ').toUpperCase()}</b>`;
         
-        if (type === 'main_website_wrapper') ui += `<div class="drop-zone"></div>`;
-        else if (['main_heading_h1','sub-heading_h2','rich_paragraph'].includes(type)) ui += `<label>Text Content</label><textarea oninput="update()">Enter Text Here...</textarea>`;
-        else if (type === 'image_url_or_local') ui += `<label>Type</label><select onchange="update()"><option value="u">Web URL</option><option value="l">Local File</option></select><input type="text" placeholder="URL" oninput="update()"><input type="file" onchange="handleFile(this)">`;
-        else if (type === 'video_strict_local' || type === 'audio_strict_local') ui += `<label>Local File</label><input type="file" onchange="handleFile(this)">`;
-        else if (type === 'youtube_embed') ui += `<label>YouTube Link</label><input type="text" placeholder="https://..." oninput="update()">`;
-        else if (type === 'base64_encoder') ui += `<label>Text to Encode</label><input type="text" value="Hello" oninput="update()">`;
-        else if (type === 'caesar_cipher_decoder') ui += `<label>Encrypted Text</label><input type="text" value="Khoor" oninput="update()"><label>Shift</label><input type="number" value="3" oninput="update()">`;
-        else if (type === 'password_protect') ui += `<label>Set Password</label><input type="text" value="1234" oninput="update()">`;
-        else ui += `<label>Label/Content</label><input type="text" value="Default" oninput="update()">`;
+        // CUSTOM UI FOR EVERY BLOCK
+        if (type === 'main_container') ui += `<div class="drop-zone"></div>`;
+        else if (type === 'heading_h1') ui += `<label>Title</label><input type="text" value="My Website" oninput="update()">`;
+        else if (type === 'paragraph') ui += `<label>Text</label><textarea oninput="update()">Enter text...</textarea>`;
+        else if (type === 'password_lock') ui += `<label>Set Password</label><input type="text" value="1234" oninput="update()">`;
+        else if (type === 'simple_button') ui += `<label>Label</label><input type="text" value="Click Me" oninput="update()"><label>Alert Text</label><input type="text" value="Hello!" oninput="update()">`;
+        else if (type === 'local_video' || type === 'local_audio') ui += `<label>Upload</label><input type="file" onchange="handleFile(this)">`;
+        else if (type === 'web_image') ui += `<label>Image URL</label><input type="text" value="https://via.placeholder.com/150" oninput="update()">`;
+        else if (type === 'caesar_cipher') ui += `<label>Secret Message</label><input type="text" value="Attack at dawn" oninput="update()"><label>Shift</label><input type="number" value="1" oninput="update()">`;
+        else ui += `<label>Value</label><input type="text" oninput="update()">`;
 
         b.innerHTML = ui;
-        b.onmousedown = (e) => { if(!['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) { draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; b.style.zIndex = 1000; } };
+        b.onmousedown = (e) => { if(!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) { draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; } };
         ws.appendChild(b);
         update();
     }
@@ -153,7 +137,6 @@
         if (!draggedEl) return;
         draggedEl.style.left = (e.clientX - offset.x - 300) + 'px';
         draggedEl.style.top = (e.clientY - offset.y - 50) + 'px';
-
         const main = document.querySelector('.block-main');
         if (main && draggedEl !== main) {
             const r = main.getBoundingClientRect();
@@ -173,36 +156,37 @@
 
     function update() {
         const main = document.querySelector('.block-main');
-        if (!main) { codeOut.innerText = "Start by dragging 'Main Website Wrapper' from CORE."; return; }
+        if (!main) { codeOut.innerText = "Add 'Main Container' first!"; return; }
         
-        let html = "", css = "body{font-family:sans-serif;background:#fff;padding:40px;text-align:center;} .box{border:1px solid #000;padding:20px;margin:10px;}", js = "";
+        let html = "", css = "body{font-family:sans-serif; text-align:center; padding:50px; background:#fff;} .box{border:1px solid #000; padding:20px; margin:20px;}", js = "";
         const blocks = main.querySelectorAll('.block');
 
         blocks.forEach(b => {
-            const t = b.dataset.type;
-            const ins = b.querySelectorAll('input, select, textarea');
+            const type = b.dataset.type;
+            const inputs = b.querySelectorAll('input, textarea');
 
-            if (t === 'main_heading_h1') html += `<h1>${ins[0].value}</h1>\n`;
-            if (t === 'rich_paragraph') html += `<p>${ins[0].value}</p>\n`;
-            if (t === 'youtube_embed') {
-                let url = ins[0].value.replace("watch?v=", "embed/");
-                html += `<iframe width="100%" height="315" src="${url}" frameborder="0" allowfullscreen></iframe>\n`;
+            if (type === 'heading_h1') html += `<h1>${inputs[0].value}</h1>\n`;
+            if (type === 'paragraph') html += `<p>${inputs[0].value}</p>\n`;
+            if (type === 'web_image') html += `<img src="${inputs[0].value}" style="max-width:100%;">\n`;
+            if (type === 'local_video') html += `<video controls width="100%"><source src="${inputs[0].dataset.base64 || ''}"></video>\n`;
+            if (type === 'simple_button') {
+                const id = "btn" + Math.floor(Math.random()*1000);
+                html += `<button id="${id}">${inputs[0].value}</button>\n`;
+                js += `document.getElementById('${id}').onclick = () => alert("${inputs[1].value}");\n`;
             }
-            if (t === 'video_strict_local') html += `<video controls width="100%"><source src="${ins[0].dataset.base64 || ''}"></video>\n`;
-            if (t === 'base64_encoder') {
-                html += `<div class="box"><strong>B64 Result:</strong> <span id="b64"></span></div>\n`;
-                js += `document.getElementById('b64').innerText = btoa("${ins[0].value}");\n`;
+            if (type === 'password_lock') {
+                js += `if(prompt("Password?") !== "${inputs[0].value}") { document.body.innerHTML = "<h1>LOCKED</h1>"; }\n`;
             }
-            if (t === 'caesar_cipher_decoder') {
-                html += `<div class="box"><strong>Cipher Decoded:</strong> <span id="cc"></span></div>\n`;
-                js += `let str="${ins[0].value}", s=${ins[1].value}, res=""; for(let i=0; i<str.length; i++) { res += String.fromCharCode(str.charCodeAt(i)-s); } document.getElementById('cc').innerText = res;\n`;
+            if (type === 'caesar_cipher') {
+                html += `<div class="box"><strong>Cipher:</strong> <span id="ciph"></span></div>\n`;
+                js += `let s="${inputs[0].value}", shift=${inputs[1].value}, res=""; for(let i=0; i<s.length; i++){ res += String.fromCharCode(s.charCodeAt(i)+shift); } document.getElementById('ciph').innerText = res;\n`;
             }
-            if (t === 'password_protect') {
-                js += `let p = prompt("Enter Password"); if(p !== "${ins[0].value}") { document.body.innerHTML = "<h1>ACCESS DENIED</h1>"; }\n`;
+            if (type === 'contact_form') {
+                html += `<form class="box">Name: <input type="text"><br>Message: <textarea></textarea><br><button type="button">Send</button></form>\n`;
             }
         });
 
-        codeOut.innerText = `<!DOCTYPE html><html>\n<head><style>${css}</style></head>\n<body>\n${html}\n<script>${js}<\/script></body>\n</html>`;
+        codeOut.innerText = `<!DOCTYPE html><html><head><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
     }
 
     function exportFile() {
