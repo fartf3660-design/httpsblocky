@@ -4,67 +4,63 @@
     <meta charset="UTF-8">
     <title>Gemini - Block Coding</title>
     <style>
-        body { margin: 0; font-family: sans-serif; background: #f4f4f4; color: #333; overflow: hidden; }
-        header { height: 50px; background: #ffffff; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 1px solid #ddd; }
-        #app { display: flex; height: calc(100vh - 50px); }
+        body { margin: 0; font-family: sans-serif; background: #f4f4f4; color: #000; overflow: hidden; }
+        header { height: 45px; background: #fff; display: flex; align-items: center; padding: 0 15px; justify-content: space-between; border-bottom: 1px solid #ccc; }
+        #app { display: flex; height: calc(100vh - 45px); }
 
         /* Sidebar */
-        #sidebar { width: 260px; background: #fff; border-right: 1px solid #ddd; overflow-y: auto; }
-        .cat-title { padding: 12px; font-size: 13px; font-weight: bold; background: #f9f9f9; border-bottom: 1px solid #eee; color: #666; }
-        .block-tool { margin: 8px; padding: 10px; background: #fff; border: 1px solid #ccc; cursor: grab; font-size: 13px; border-radius: 4px; text-align: center; }
-        .block-tool:hover { border-color: #3d5afe; background: #f0f4ff; }
+        #sidebar { width: 250px; background: #fdfdfd; border-right: 1px solid #ccc; overflow-y: auto; }
+        .cat-title { padding: 10px; font-size: 11px; font-weight: bold; background: #eee; color: #555; text-transform: uppercase; border-bottom: 1px solid #ccc; }
+        .block-tool { margin: 6px; padding: 8px; background: #fff; border: 1px solid #bbb; cursor: grab; font-size: 12px; border-radius: 2px; text-align: center; }
+        .block-tool:hover { background: #f9f9f9; border-color: #000; }
 
         /* Workspace */
-        #workspace { flex: 2; position: relative; background: #eee; overflow: auto; padding: 50px; }
-        #trash { position: absolute; bottom: 20px; left: 280px; padding: 15px 25px; background: #ff4444; color: #fff; font-weight: bold; border-radius: 4px; cursor: pointer; z-index: 100; }
+        #workspace { flex: 2; position: relative; background: #fff; overflow: auto; padding: 40px; }
+        #trash { position: absolute; bottom: 20px; left: 270px; padding: 10px 20px; background: #cc0000; color: #fff; font-size: 12px; font-weight: bold; border-radius: 2px; cursor: pointer; z-index: 100; }
 
-        /* Real Blocks */
-        .block { position: absolute; width: 240px; background: #fff; border: 1px solid #999; padding: 15px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; }
-        .block-main { border: 2px solid #3d5afe; min-height: 400px; width: 320px; }
-        .block-content { min-height: 200px; border: 2px dashed #ccc; margin-top: 10px; padding: 10px; border-radius: 4px; background: #fafafa; }
+        /* Blocks */
+        .block { position: absolute; width: 230px; background: #fff; border: 1px solid #000; padding: 12px; z-index: 10; box-shadow: 2px 2px 0px #ccc; }
+        .block-main { border: 2px solid #000; min-height: 450px; width: 320px; background: #fafafa; }
+        .block-content { min-height: 250px; border: 1px dashed #888; margin-top: 10px; padding: 10px; background: #fff; }
         
-        .block b { display: block; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .block label { display: block; font-size: 11px; color: #777; margin-top: 8px; font-weight: bold; }
-        .block input, .block select { width: 100%; padding: 6px; margin-top: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px; box-sizing: border-box; }
+        .block b { display: block; margin-bottom: 8px; font-size: 13px; border-bottom: 1px solid #eee; }
+        .block label { display: block; font-size: 10px; color: #666; margin-top: 8px; font-weight: bold; }
+        .block input, .block select { width: 100%; padding: 5px; margin-top: 4px; border: 1px solid #999; font-size: 11px; box-sizing: border-box; }
 
         /* Preview */
-        #viewer { width: 350px; background: #fff; border-left: 1px solid #ddd; display: flex; flex-direction: column; }
-        #code-out { flex: 1; padding: 15px; font-family: monospace; font-size: 12px; background: #f8f8f8; overflow: auto; border: none; margin: 0; }
-        .btn-save { background: #3d5afe; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        #viewer { width: 340px; background: #fff; border-left: 1px solid #ccc; display: flex; flex-direction: column; }
+        #code-out { flex: 1; padding: 10px; font-family: monospace; font-size: 11px; background: #f4f4f4; overflow: auto; border: none; margin: 0; color: #333; }
+        .btn-export { background: #000; color: #fff; border: none; padding: 8px 15px; cursor: pointer; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-weight: bold;">Gemini - Block Coding</div>
-    <button class="btn-save" onclick="exportFile()">Download HTML</button>
+    <div style="font-weight: bold;">GEMINI - BLOCK CODING</div>
+    <button class="btn-export" onclick="exportFile()">EXPORT HTML</button>
 </header>
 
 <div id="app">
     <div id="sidebar">
-        <div class="cat-title">Structure</div>
+        <div class="cat-title">Basics</div>
         <div class="block-tool" draggable="true" data-type="main">Main Page Container</div>
+        <div class="block-tool" draggable="true" data-type="h1">Heading</div>
+        <div class="block-tool" draggable="true" data-type="p">Text Paragraph</div>
         
-        <div class="cat-title">Content</div>
-        <div class="block-tool" draggable="true" data-type="h1">Header Text</div>
-        <div class="block-tool" draggable="true" data-type="p">Paragraph</div>
-        <div class="block-tool" draggable="true" data-type="link">Hyperlink</div>
-        <div class="block-tool" draggable="true" data-type="img">Image (URL/Local)</div>
-        <div class="block-tool" draggable="true" data-type="video">Video (YouTube URL)</div>
+        <div class="cat-title">Media</div>
+        <div class="block-tool" draggable="true" data-type="video">Video Element</div>
+        <div class="block-tool" draggable="true" data-type="img">Image Element</div>
         
-        <div class="cat-title">Style</div>
-        <div class="block-tool" draggable="true" data-type="bg">Page Background</div>
-        
-        <div class="cat-title">Chaos Panel</div>
-        <div class="block-tool" draggable="true" data-type="chaos_btn">Chaos Popup Button</div>
+        <div class="cat-title">Styling</div>
+        <div class="block-tool" draggable="true" data-type="bg">Background Settings</div>
     </div>
 
     <div id="workspace">
-        <div id="trash">TRASH</div>
+        <div id="trash">TRASH CAN</div>
     </div>
 
     <div id="viewer">
-        <div style="padding: 10px; background: #eee; font-size: 11px; font-weight: bold;">LIVE SOURCE</div>
+        <div style="padding: 8px; background: #ddd; font-size: 10px; font-weight: bold;">SOURCE CODE</div>
         <pre id="code-out"></pre>
     </div>
 </div>
@@ -82,7 +78,7 @@
     ws.ondragover = (e) => e.preventDefault();
     ws.ondrop = (e) => {
         const type = e.dataTransfer.getData('type');
-        if (type) createBlock(type, e.clientX - 300, e.clientY - 100);
+        if (type) createBlock(type, e.clientX - 280, e.clientY - 80);
     };
 
     function createBlock(type, x, y) {
@@ -91,52 +87,50 @@
         b.style.left = x + 'px'; b.style.top = y + 'px';
         b.dataset.type = type;
 
-        let ui = `<b>${type.toUpperCase().replace('_', ' ')}</b>`;
+        let ui = `<b>${type.toUpperCase()}</b>`;
         
         if (type === 'main') {
             ui += `<div class="block-content"></div>`;
         } else if (type === 'h1' || type === 'p') {
-            ui += `<label>Text Content</label><input type="text" value="New Text" oninput="update()">`;
-        } else if (type === 'link') {
-            ui += `<label>Label</label><input type="text" value="Click Me" oninput="update()">
-                   <label>URL</label><input type="text" value="https://google.com" oninput="update()">`;
-        } else if (type === 'img') {
-            ui += `<label>Mode</label><select onchange="toggleInput(this, '.url-in', '.file-in')"><option value="url">URL</option><option value="local">Local</option></select>
-                   <input class="url-in" type="text" placeholder="URL" oninput="update()">
-                   <input class="file-in" type="file" style="display:none" onchange="handleFile(this)">`;
+            ui += `<label>Text Content</label><input type="text" value="New Content" oninput="update()">`;
         } else if (type === 'video') {
-            ui += `<label>YouTube URL</label><input type="text" value="https://www.youtube.com/embed/dQw4w9WgXcQ" oninput="update()">`;
+            ui += `<label>Source Mode</label>
+                   <select onchange="toggleVidFields(this)">
+                       <option value="url">Web URL / YouTube</option>
+                       <option value="local">Local File</option>
+                   </select>
+                   <div class="vid-url-field">
+                       <label>URL</label><input type="text" placeholder="https://..." oninput="update()">
+                       <label>YouTube Mode?</label><select onchange="update()"><option value="n">No</option><option value="y">Yes</option></select>
+                   </div>
+                   <div class="vid-local-field" style="display:none;">
+                       <label>Local Video File</label><input type="file" accept="video/*" onchange="handleFile(this)">
+                   </div>`;
+        } else if (type === 'img') {
+            ui += `<label>Source Mode</label><select onchange="toggleIn(this,0,1)"><option value="u">URL</option><option value="l">Local</option></select>
+                   <input type="text" placeholder="URL" oninput="update()"><input type="file" style="display:none" onchange="handleFile(this)">`;
         } else if (type === 'bg') {
-            ui += `<label>Mode</label><select onchange="toggleBg(this)"><option value="color">Color</option><option value="local">Local Image</option></select>
-                   <input class="bg-c" type="color" onchange="update()">
-                   <input class="bg-f" type="file" style="display:none" onchange="handleFile(this)">`;
-        } else if (type === 'chaos_btn') {
-            ui += `<label>Button Text</label><input type="text" value="SURPRISE" oninput="update()">
-                   <label>Popup Image URL</label><input type="text" value="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJ6bmN6Z3Z6Z3Z6Z3Z6Z3Z/3o7TKSjPQC1IdR9Bpm/giphy.gif" oninput="update()">
-                   <label>Movement</label><select onchange="update()"><option value="none">Stay Still</option><option value="dvd">DVD Bounce</option><option value="crazy">Crazy Jitter</option></select>`;
+            ui += `<label>Background Type</label><select onchange="toggleIn(this,0,1)"><option value="c">Color</option><option value="l">Local Image</option></select>
+                   <input type="color" onchange="update()"><input type="file" style="display:none" onchange="handleFile(this)">`;
         }
 
         b.innerHTML = ui;
-        b.onmousedown = (e) => { 
-            if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') { 
-                draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; b.style.zIndex = 1000;
-            } 
-        };
+        b.onmousedown = (e) => { if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') { draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; b.style.zIndex = 1000; } };
         ws.appendChild(b);
         update();
     }
 
-    function toggleInput(sel, c1, c2) {
+    function toggleVidFields(sel) {
         const p = sel.parentElement;
-        p.querySelector(c1).style.display = sel.value === 'url' ? 'block' : 'none';
-        p.querySelector(c2).style.display = sel.value === 'local' ? 'block' : 'none';
+        p.querySelector('.vid-url-field').style.display = sel.value === 'url' ? 'block' : 'none';
+        p.querySelector('.vid-local-field').style.display = sel.value === 'local' ? 'block' : 'none';
         update();
     }
 
-    function toggleBg(sel) {
-        const p = sel.parentElement;
-        p.querySelector('.bg-c').style.display = sel.value === 'color' ? 'block' : 'none';
-        p.querySelector('.bg-f').style.display = sel.value === 'local' ? 'block' : 'none';
+    function toggleIn(sel, idx1, idx2) {
+        const ins = sel.parentElement.querySelectorAll('input');
+        ins[idx1].style.display = sel.value === 'u' || sel.value === 'c' ? 'block' : 'none';
+        ins[idx2].style.display = sel.value === 'l' ? 'block' : 'none';
         update();
     }
 
@@ -148,9 +142,9 @@
 
     window.onmousemove = (e) => {
         if (!draggedEl) return;
-        let x = e.clientX - offset.x;
-        let y = e.clientY - offset.y;
-        draggedEl.style.left = (x - 260) + 'px'; draggedEl.style.top = (y - 50) + 'px';
+        let x = e.clientX - offset.x - 240;
+        let y = e.clientY - offset.y - 45;
+        draggedEl.style.left = x + 'px'; draggedEl.style.top = y + 'px';
 
         const main = document.querySelector('.block-main');
         if (main && draggedEl !== main) {
@@ -159,7 +153,7 @@
                 main.querySelector('.block-content').appendChild(draggedEl);
                 draggedEl.style.position = 'relative'; draggedEl.style.left = '0'; draggedEl.style.top = '0';
             } else if (draggedEl.parentElement !== ws) {
-                ws.appendChild(draggedEl); draggedEl.style.position = 'absolute'; 
+                ws.appendChild(draggedEl); draggedEl.style.position = 'absolute';
             }
         }
     };
@@ -173,44 +167,49 @@
 
     function update() {
         const main = document.querySelector('.block-main');
-        if (!main) { codeOut.innerText = "Drag 'Main Page Container' to start."; return; }
+        if (!main) { codeOut.innerText = "Add Main Container to start."; return; }
         
-        let html = "", css = "body { background: white; text-align: center; }", js = "";
-        const children = main.querySelectorAll('.block');
+        let html = "", css = "body { background: white; text-align: center; font-family: sans-serif; padding: 20px; }", js = "";
+        const items = main.querySelectorAll('.block');
 
-        children.forEach(c => {
-            const t = c.dataset.type;
-            const inputs = c.querySelectorAll('input, select');
+        items.forEach(i => {
+            const t = i.dataset.type;
+            const ins = i.querySelectorAll('input, select');
             
-            if (t === 'h1') html += `  <h1>${inputs[0].value}</h1>\n`;
-            if (t === 'p') html += `  <p>${inputs[0].value}</p>\n`;
-            if (t === 'link') html += `  <a href="${inputs[1].value}">${inputs[0].value}</a><br>\n`;
+            if (t === 'h1') html += `  <h1>${ins[0].value}</h1>\n`;
+            if (t === 'p') html += `  <p>${ins[0].value}</p>\n`;
             if (t === 'img') {
-                const src = inputs[0].value === 'url' ? inputs[1].value : (inputs[2].dataset.base64 || "");
-                html += `  <img src="${src}" style="max-width:80%; margin-top:20px;">\n`;
+                const src = ins[0].value === 'u' ? ins[1].value : (ins[2].dataset.base64 || "");
+                html += `  <img src="${src}" style="max-width:100%; margin:10px;">\n`;
             }
             if (t === 'video') {
-                const vidUrl = inputs[0].value.replace("watch?v=", "embed/");
-                html += `  <iframe width="560" height="315" src="${vidUrl}" frameborder="0"></iframe>\n`;
+                const mode = ins[0].value;
+                if (mode === 'url') {
+                    let url = ins[1].value;
+                    const isYT = ins[2].value === 'y';
+                    if (isYT) {
+                        url = url.replace("watch?v=", "embed/");
+                        html += `  <iframe width="100%" height="315" src="${url}" frameborder="0" allowfullscreen></iframe>\n`;
+                    } else {
+                        html += `  <video width="100%" controls><source src="${url}"></video>\n`;
+                    }
+                } else {
+                    const src = ins[3].dataset.base64 || "";
+                    html += `  <video width="100%" controls><source src="${src}"></video>\n`;
+                }
             }
             if (t === 'bg') {
-                if (inputs[0].value === 'color') css = css.replace('white', inputs[1].value);
-                else css += `body { background: url('${inputs[2].dataset.base64}'); background-size: cover; }`;
-            }
-            if (t === 'chaos_btn') {
-                const id = "chaos" + Math.floor(Math.random()*1000);
-                html += `  <button id="${id}" onclick="showPopup('${inputs[1].value}')" style="position:absolute; padding:10px;">${inputs[0].value}</button>\n`;
-                if(inputs[2].value === 'dvd') js += `  startDVD('${id}');\n`;
-                if(inputs[2].value === 'crazy') js += `  startCrazy('${id}');\n`;
+                if (ins[0].value === 'c') css = css.replace('white', ins[1].value);
+                else css += `body { background: url('${ins[2].dataset.base64}'); background-size: cover; }`;
             }
         });
 
-        codeOut.innerText = `<!DOCTYPE html>\n<html>\n<head>\n<style>\n${css}\n</style>\n</head>\n<body>\n${html}\n<script>\nfunction showPopup(url){ let win = window.open("", "Popup", "width=400,height=400"); win.document.write('<img src="'+url+'" style="width:100%">'); }\nfunction startDVD(id){ let el=document.getElementById(id); let x=0,y=0,dx=2,dy=2; setInterval(()=>{ x+=dx; y+=dy; if(x+el.offsetWidth>window.innerWidth||x<0) dx*=-1; if(y+el.offsetHeight>window.innerHeight||y<0) dy*=-1; el.style.left=x+'px'; el.style.top=y+'px'; },10); }\nfunction startCrazy(id){ let el=document.getElementById(id); setInterval(()=>{ el.style.left=Math.random()*(window.innerWidth-100)+'px'; el.style.top=Math.random()*(window.innerHeight-100)+'px'; },100); }\n${js}<\/script>\n</body>\n</html>`;
+        codeOut.innerText = `<!DOCTYPE html>\n<html>\n<head>\n<style>\n${css}\n</style>\n</head>\n<body>\n${html}</body>\n</html>`;
     }
 
     function exportFile() {
-        const b = new Blob([codeOut.innerText], {type:'text/html'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'index.html'; a.click();
+        const blob = new Blob([codeOut.innerText], {type:'text/html'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'index.html'; a.click();
     }
 </script>
 </body>
