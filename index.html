@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>Gemini - Block Coding</title>
     <style>
-        :root { --bg: #0f0f0f; --panel: #181818; --accent: #3d5afe; --text: #efefef; --trash: #ff1744; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+        :root { --bg: #0f0f0f; --panel: #181818; --accent: #3d5afe; --text: #efefef; --trash: #b71c1c; }
+        body { margin: 0; font-family: 'Inter', 'Helvetica', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
         
         header { 
             height: 50px; background: #000; display: flex; align-items: center; 
@@ -16,71 +16,72 @@
 
         /* Sidebar */
         #sidebar { width: 220px; background: var(--panel); border-right: 1px solid #333; display: flex; flex-direction: column; }
-        .cat-label { padding: 15px 10px 5px; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
+        .cat-label { padding: 15px 10px 5px; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #222; margin-bottom: 5px; }
         .block-tool { 
-            margin: 5px 10px; padding: 10px; background: #2a2a2a; border-radius: 4px; 
-            cursor: grab; font-size: 13px; border: 1px solid #444; transition: 0.2s;
+            margin: 5px 10px; padding: 10px; background: #2a2a2a; border-radius: 2px; 
+            cursor: grab; font-size: 12px; border: 1px solid #444; transition: 0.1s;
         }
-        .block-tool:hover { background: #333; }
+        .block-tool:hover { background: #333; border-color: var(--accent); }
 
         /* Workspace */
         #workspace { flex: 2; position: relative; overflow: hidden; background: #121212; }
         
         /* Code View */
-        #viewer { width: 300px; background: #050505; border-left: 1px solid #333; display: flex; flex-direction: column; }
-        #code-out { flex: 1; padding: 15px; font-family: 'Fira Code', monospace; font-size: 12px; color: #4caf50; overflow: auto; margin: 0; }
+        #viewer { width: 350px; background: #050505; border-left: 1px solid #333; display: flex; flex-direction: column; }
+        #code-out { flex: 1; padding: 15px; font-family: 'Consolas', monospace; font-size: 12px; color: #81c784; overflow: auto; margin: 0; }
 
-        /* Real Blocks */
+        /* Blocks */
         .block { 
-            position: absolute; min-width: 180px; background: #222; border-radius: 6px; 
-            border: 1px solid #444; padding: 10px; cursor: move; box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            z-index: 10;
+            position: absolute; min-width: 200px; background: #222; border-radius: 2px; 
+            border: 1px solid #444; padding: 12px; cursor: move; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 10; font-size: 12px;
         }
-        .block-main { border: 2px solid var(--accent); min-height: 200px; width: 250px; z-index: 5; }
-        .block-content { min-height: 100px; border: 1px dashed #444; margin-top: 10px; padding: 10px; border-radius: 4px; }
+        .block-main { border: 1px solid var(--accent); min-height: 250px; width: 280px; z-index: 5; }
+        .block-content { min-height: 150px; border: 1px dashed #444; margin-top: 10px; padding: 10px; }
         
         .block input, .block select { 
             width: 100%; background: #111; border: 1px solid #444; color: #fff; 
-            margin-top: 5px; padding: 4px; font-size: 12px; border-radius: 3px;
+            margin-top: 8px; padding: 6px; font-size: 11px; box-sizing: border-box;
         }
+        .block .row { margin-top: 10px; border-top: 1px solid #333; padding-top: 8px; }
+        .block label { font-size: 10px; color: #888; text-transform: uppercase; }
 
         /* Trash */
         #trash-can {
-            position: absolute; bottom: 20px; left: 240px; width: 60px; height: 60px;
-            background: var(--trash); border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-size: 24px; opacity: 0.7; transition: 0.3s;
+            position: absolute; bottom: 30px; left: 250px; width: 50px; height: 50px;
+            background: var(--trash); border-radius: 4px; display: flex; align-items: center;
+            justify-content: center; font-size: 12px; font-weight: bold; color: white; opacity: 0.6;
         }
-        #trash-can:hover { opacity: 1; transform: scale(1.1); }
 
-        .btn { background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn { background: var(--accent); color: white; border: none; padding: 8px 15px; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-weight: 900; color: var(--accent);">GEMINI - BLOCK CODING</div>
-    <button class="btn" onclick="exportFile()">DOWNLOAD HTML</button>
+    <div style="font-weight: bold; font-size: 14px;">GEMINI - BLOCK CODING</div>
+    <button class="btn" onclick="exportFile()">EXPORT HTML</button>
 </header>
 
 <div id="app">
     <div id="sidebar">
         <div class="cat-label">Logic</div>
-        <div class="block-tool" draggable="true" data-type="main">🏠 Main Container</div>
+        <div class="block-tool" draggable="true" data-type="main">Main Page Container</div>
         
-        <div class="cat-label">Content</div>
-        <div class="block-tool" draggable="true" data-type="text">📝 Text Content</div>
-        <div class="block-tool" draggable="true" data-type="img">🖼️ Local Image</div>
+        <div class="cat-label">Elements</div>
+        <div class="block-tool" draggable="true" data-type="text">Text Content</div>
+        <div class="block-tool" draggable="true" data-type="img">Image Element</div>
         
-        <div class="cat-label">Style</div>
-        <div class="block-tool" draggable="true" data-type="bg">🎨 Page Color</div>
+        <div class="cat-label">Appearance</div>
+        <div class="block-tool" draggable="true" data-type="bg">Background Settings</div>
     </div>
 
-    <div id="workspace" id="ws">
-        <div id="trash-can">🗑️</div>
+    <div id="workspace">
+        <div id="trash-can">TRASH</div>
     </div>
 
     <div id="viewer">
-        <div style="padding: 10px; background: #111; font-size: 11px; color: #555;">SOURCE CODE</div>
+        <div style="padding: 10px; background: #111; font-size: 10px; color: #666; border-bottom: 1px solid #333;">OUTPUT SOURCE</div>
         <pre id="code-out"></pre>
     </div>
 </div>
@@ -91,7 +92,6 @@
     let draggedEl = null;
     let offset = { x: 0, y: 0 };
 
-    // 1. Drag and Drop from Sidebar
     document.querySelectorAll('.block-tool').forEach(tool => {
         tool.addEventListener('dragstart', e => { e.dataTransfer.setData('type', tool.dataset.type); });
     });
@@ -112,20 +112,58 @@
 
         let inner = '';
         if (type === 'main') {
-            inner = `<b>MAIN CONTAINER</b><div class="block-content" id="main-drop"></div>`;
+            inner = `<b>MAIN PAGE</b><div class="block-content" id="main-drop"></div>`;
         } else if (type === 'text') {
-            inner = `TEXT<select onchange="update()"><option value="h1">Heading</option><option value="p">Paragraph</option></select>
-                     <input type="text" value="Edit me..." oninput="update()">`;
+            inner = `<label>Type</label><select onchange="update()"><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="p">Paragraph</option></select>
+                     <label>Content</label><input type="text" value="New Text" oninput="update()">`;
         } else if (type === 'img') {
-            inner = `IMAGE<input type="file" accept="image/*" onchange="update()">`;
+            inner = `<label>Source Type</label>
+                     <select class="img-mode" onchange="toggleImgFields(this)">
+                        <option value="url">Web URL</option>
+                        <option value="local">Local File</option>
+                     </select>
+                     <div class="img-url-field"><label>URL</label><input type="text" value="https://via.placeholder.com/150" oninput="update()"></div>
+                     <div class="img-local-field" style="display:none;"><label>File</label><input type="file" accept="image/*" onchange="handleFile(this)"></div>`;
         } else if (type === 'bg') {
-            inner = `BG COLOR<input type="color" value="#ffffff" onchange="update()">`;
+            inner = `<label>Background Mode</label>
+                     <select class="bg-mode" onchange="toggleBgFields(this)">
+                        <option value="color">Solid Color</option>
+                        <option value="image">URL Image</option>
+                     </select>
+                     <div class="bg-color-field"><label>Color</label><input type="color" value="#ffffff" onchange="update()"></div>
+                     <div class="bg-image-field" style="display:none;"><label>Image URL</label><input type="text" placeholder="https://..." oninput="update()"></div>`;
         }
 
         b.innerHTML = inner;
         makeDraggable(b);
         ws.appendChild(b);
         update();
+    }
+
+    function toggleImgFields(sel) {
+        const block = sel.closest('.block');
+        block.querySelector('.img-url-field').style.display = sel.value === 'url' ? 'block' : 'none';
+        block.querySelector('.img-local-field').style.display = sel.value === 'local' ? 'block' : 'none';
+        update();
+    }
+
+    function toggleBgFields(sel) {
+        const block = sel.closest('.block');
+        block.querySelector('.bg-color-field').style.display = sel.value === 'color' ? 'block' : 'none';
+        block.querySelector('.bg-image-field').style.display = sel.value === 'image' ? 'block' : 'none';
+        update();
+    }
+
+    function handleFile(input) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                input.dataset.base64 = e.target.result;
+                update();
+            };
+            reader.readAsDataURL(file);
+        }
     }
 
     function makeDraggable(el) {
@@ -143,33 +181,19 @@
         if (!draggedEl) return;
         let x = e.clientX - offset.x - 220;
         let y = e.clientY - offset.y - 50;
-        
         draggedEl.style.left = x + 'px';
         draggedEl.style.top = y + 'px';
 
-        // Check if hovering over Main Block
         const main = document.querySelector('.block-main');
         if (main && draggedEl !== main) {
             const mRect = main.getBoundingClientRect();
             if (e.clientX > mRect.left && e.clientX < mRect.right && e.clientY > mRect.top && e.clientY < mRect.bottom) {
                 main.querySelector('.block-content').appendChild(draggedEl);
-                draggedEl.style.position = 'relative';
-                draggedEl.style.left = '0';
-                draggedEl.style.top = '0';
+                draggedEl.style.position = 'relative'; draggedEl.style.left = '0'; draggedEl.style.top = '0';
             } else if (draggedEl.parentElement !== ws) {
                 ws.appendChild(draggedEl);
-                draggedEl.style.position = 'absolute';
-                draggedEl.style.left = x + 'px';
-                draggedEl.style.top = y + 'px';
+                draggedEl.style.position = 'absolute'; draggedEl.style.left = x + 'px'; draggedEl.style.top = y + 'px';
             }
-        }
-
-        // Trash check
-        const trash = document.getElementById('trash-can').getBoundingClientRect();
-        if (e.clientX > trash.left && e.clientX < trash.right && e.clientY > trash.top && e.clientY < trash.bottom) {
-            draggedEl.style.border = "2px solid red";
-        } else {
-            draggedEl.style.border = "";
         }
     };
 
@@ -186,11 +210,11 @@
 
     function update() {
         const main = document.querySelector('.block-main');
-        if (!main) { codeOut.innerText = "Add a 'Main Container' to generate code."; return; }
+        if (!main) { codeOut.innerText = "Add 'Main Page Container' to begin."; return; }
         
         const children = main.querySelectorAll('.block');
         let bodyHtml = '';
-        let bgColor = '#ffffff';
+        let bgCss = 'background-color: #ffffff;';
 
         children.forEach(c => {
             const type = c.dataset.type;
@@ -199,15 +223,19 @@
                 const txt = c.querySelector('input').value;
                 bodyHtml += `  <${tag}>${txt}</${tag}>\n`;
             } else if (type === 'img') {
-                const file = c.querySelector('input').files[0];
-                const src = file ? URL.createObjectURL(file) : 'placeholder.jpg';
-                bodyHtml += `  <img src="${src}" style="max-width:100%;">\n`;
+                const mode = c.querySelector('.img-mode').value;
+                let src = "";
+                if (mode === 'url') src = c.querySelector('.img-url-field input').value;
+                else src = c.querySelector('.img-local-field input').dataset.base64 || "";
+                bodyHtml += `  <img src="${src}" style="max-width:100%; height:auto;">\n`;
             } else if (type === 'bg') {
-                bgColor = c.querySelector('input').value;
+                const mode = c.querySelector('.bg-mode').value;
+                if (mode === 'color') bgCss = `background-color: ${c.querySelector('.bg-color-field input').value};`;
+                else bgCss = `background-image: url('${c.querySelector('.bg-image-field input').value}'); background-size: cover;`;
             }
         });
 
-        const final = `<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body { background: ${bgColor}; font-family: sans-serif; text-align: center; padding: 50px; }\n</style>\n</head>\n<body>\n${bodyHtml}</body>\n</html>`;
+        const final = `<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body { ${bgCss} font-family: sans-serif; text-align: center; padding: 50px; min-height: 100vh; margin: 0; }\n</style>\n</head>\n<body>\n${bodyHtml}</body>\n</html>`;
         codeOut.innerText = final;
     }
 
