@@ -2,147 +2,212 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HTML Blueprint Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blueprint HTML Studio Pro</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <style>
-        :root { --ue-dark: #1a1a1a; --ue-blue: #007bff; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #2b2b2b; color: white; }
-        
-        header { 
-            background: var(--ue-dark); padding: 10px 20px; 
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 2px solid #000;
+        :root {
+            --ue-bg: #151515;
+            --ue-sidebar: #222222;
+            --ue-accent: #3399ff;
+            --ue-text: #e0e0e0;
         }
 
-        #editor-wrapper { position: relative; height: calc(100vh - 60px); width: 100%; }
-        
-        /* Blockly Workspace */
-        #blocklyDiv { height: 100%; width: 100%; }
-
-        /* Code Overlay (Hidden by default) */
-        #code-view { 
-            display: none; position: absolute; top: 0; left: 0; 
-            width: 100%; height: 100%; background: #1e1e1e; 
-            color: #dcdcdc; padding: 20px; box-sizing: border-box;
-            font-family: 'Consolas', monospace; white-space: pre-wrap;
-            z-index: 10; overflow: auto;
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            background-color: var(--ue-bg); color: var(--ue-text);
+            font-family: 'Segoe UI', sans-serif; overflow: hidden;
         }
 
-        .btn-toggle {
-            background: var(--ue-blue); color: white; border: none;
-            padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold;
+        header {
+            height: 50px; background: #000;
+            display: flex; align-items: center; padding: 0 20px;
+            justify-content: space-between; border-bottom: 1px solid #333;
         }
-        .btn-toggle:hover { background: #0056b3; }
-        
-        .status-bar { position: absolute; bottom: 10px; right: 20px; z-index: 20; color: #888; font-size: 12px; }
+
+        .brand { font-weight: 800; color: var(--ue-accent); }
+
+        button {
+            background: var(--ue-accent); color: white; border: none;
+            padding: 8px 16px; border-radius: 4px; cursor: pointer;
+            font-weight: 600; transition: 0.2s;
+        }
+
+        button:hover { background: #2288ee; }
+
+        #main-container { display: flex; height: calc(100vh - 50px); }
+
+        #blocklyDiv { flex: 1; height: 100%; }
+
+        #code-panel {
+            width: 350px; background: var(--ue-sidebar);
+            border-left: 1px solid #333; display: flex; flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 10px; background: #111; font-size: 11px;
+            text-transform: uppercase; border-bottom: 1px solid #333;
+        }
+
+        #code-display {
+            flex: 1; padding: 15px; margin: 0;
+            font-family: 'Consolas', monospace; font-size: 12px;
+            color: #dcdcdc; overflow: auto; white-space: pre-wrap;
+            background: #1a1a1a;
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-weight: bold; font-size: 1.2em;">HTML BLUEPRINT</div>
-    <div>
-        <button class="btn-toggle" onclick="toggleView()" id="toggleBtn">VIEW CODE</button>
-    </div>
+    <div class="brand">HTML BLUEPRINT PRO</div>
+    <button onclick="downloadHTML()">EXPORT HTML FILE</button>
 </header>
 
-<div id="editor-wrapper">
+<div id="main-container">
     <div id="blocklyDiv"></div>
-    <div id="code-view" id="generated-code"></div>
-    <div class="status-bar">Blueprint Mode: Active</div>
+    <div id="code-panel">
+        <div class="panel-header">Live Source Preview</div>
+        <pre id="code-display"></pre>
+    </div>
 </div>
 
-<!-- Toolbox -->
 <xml id="toolbox" style="display: none">
-    <category name="Structure" colour="230">
+    <category name="Core" colour="#2c3e50">
         <block type="html_root"></block>
     </category>
-    <category name="Elements" colour="160">
-        <block type="html_title"></block>
-        <block type="html_paragraph"></block>
+    <category name="Layout" colour="#8e44ad">
+        <block type="html_div"></block>
+        <block type="html_section"></block>
+        <block type="html_br"></block>
     </category>
-    <category name="Input" colour="100">
+    <category name="Text" colour="#2980b9">
+        <block type="html_h1"></block>
+        <block type="html_h2"></block>
+        <block type="html_p"></block>
         <block type="text"></block>
+    </category>
+    <category name="Media" colour="#27ae60">
+        <block type="html_img_local"></block>
+        <block type="html_img_url"></block>
+    </category>
+    <category name="UI" colour="#d35400">
+        <block type="html_button"></block>
+        <block type="html_link"></block>
     </category>
 </xml>
 
 <script>
-    // --- 1. Custom Block Definitions ---
+    // --- BLOCK DEFINITIONS ---
     Blockly.Blocks['html_root'] = {
         init: function() {
             this.appendDummyInput().appendField("DOCUMENT (HTML)");
-            this.appendStatementInput("CONTENT").setCheck(null);
-            this.setColour(230);
+            this.appendStatementInput("CONTENT").appendField("body content");
+            this.setColour("#2c3e50");
         }
     };
 
-    Blockly.Blocks['html_title'] = {
+    Blockly.Blocks['html_div'] = {
         init: function() {
-            this.appendValueInput("VALUE").setCheck("String").appendField("H1 TITLE");
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(160);
+            this.appendDummyInput().appendField("DIV (Box)");
+            this.appendValueInput("CLASS").setCheck("String").appendField("class name");
+            this.appendStatementInput("CONTENT");
+            this.setPreviousStatement(true); this.setNextStatement(true);
+            this.setColour("#8e44ad");
         }
     };
 
-    Blockly.Blocks['html_paragraph'] = {
+    Blockly.Blocks['html_h1'] = {
         init: function() {
-            this.appendValueInput("VALUE").setCheck("String").appendField("PARAGRAPH");
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            this.setColour(160);
+            this.appendValueInput("CONTENT").setCheck("String").appendField("H1 TITLE");
+            this.setPreviousStatement(true); this.setNextStatement(true);
+            this.setColour("#2980b9");
         }
     };
 
-    // --- 2. Code Generator Logic ---
+    Blockly.Blocks['html_p'] = {
+        init: function() {
+            this.appendValueInput("CONTENT").setCheck("String").appendField("PARAGRAPH");
+            this.setPreviousStatement(true); this.setNextStatement(true);
+            this.setColour("#2980b9");
+        }
+    };
+
+    Blockly.Blocks['html_img_local'] = {
+        init: function() {
+            this.appendDummyInput().appendField("LOCAL IMAGE")
+                .appendField(new Blockly.FieldTextInput("image.jpg"), "FILENAME");
+            this.setPreviousStatement(true); this.setNextStatement(true);
+            this.setColour("#27ae60");
+        }
+    };
+
+    Blockly.Blocks['html_button'] = {
+        init: function() {
+            this.appendValueInput("TEXT").setCheck("String").appendField("BUTTON");
+            this.setPreviousStatement(true); this.setNextStatement(true);
+            this.setColour("#d35400");
+        }
+    };
+
+    // --- GENERATOR LOGIC ---
     const htmlGen = new Blockly.Generator('HTML');
 
     htmlGen['html_root'] = function(block) {
         const body = htmlGen.statementToCode(block, 'CONTENT');
-        return `<html>\n<body>\n${body}</body>\n</html>`;
+        return `<!DOCTYPE html>\n<html>\n<body style="font-family:sans-serif;">\n${body}</body>\n</html>`;
     };
 
-    htmlGen['html_title'] = function(block) {
-        const text = htmlGen.valueToCode(block, 'VALUE', 0) || "''";
-        return `  <h1>${text.replace(/'/g, "")}</h1>\n`;
+    htmlGen['html_div'] = function(block) {
+        const cls = htmlGen.valueToCode(block, 'CLASS', 0).replace(/'/g, "");
+        const content = htmlGen.statementToCode(block, 'CONTENT');
+        return `<div class="${cls}">\n${content}</div>\n`;
     };
 
-    htmlGen['html_paragraph'] = function(block) {
-        const text = htmlGen.valueToCode(block, 'VALUE', 0) || "''";
-        return `  <p>${text.replace(/'/g, "")}</p>\n`;
+    htmlGen['html_h1'] = function(block) {
+        const val = htmlGen.valueToCode(block, 'CONTENT', 0).replace(/'/g, "");
+        return `<h1>${val}</h1>\n`;
+    };
+
+    htmlGen['html_p'] = function(block) {
+        const val = htmlGen.valueToCode(block, 'CONTENT', 0).replace(/'/g, "");
+        return `<p>${val}</p>\n`;
+    };
+
+    htmlGen['html_img_local'] = function(block) {
+        const file = block.getFieldValue('FILENAME');
+        return `<img src="${file}" style="max-width:100%;">\n`;
+    };
+
+    htmlGen['html_button'] = function(block) {
+        const txt = htmlGen.valueToCode(block, 'TEXT', 0).replace(/'/g, "");
+        return `<button>${txt}</button>\n`;
     };
 
     htmlGen['text'] = function(block) {
         return [block.getFieldValue('TEXT'), 0];
     };
 
-    // --- 3. Initialization ---
+    // --- INITIALIZATION ---
     const workspace = Blockly.inject('blocklyDiv', {
         toolbox: document.getElementById('toolbox'),
-        theme: Blockly.Themes.Dark, // UE feel
-        renderer: 'zelos' // Makes blocks look more like UE nodes
+        theme: Blockly.Themes.Dark,
+        renderer: 'zelos'
     });
 
-    // --- 4. Toggle Logic ---
-    let isCodeView = false;
-    function toggleView() {
-        const codeDiv = document.getElementById('code-view');
-        const blocklyDiv = document.getElementById('blocklyDiv');
-        const btn = document.getElementById('toggleBtn');
-        
-        isCodeView = !isCodeView;
+    workspace.addChangeListener(() => {
+        document.getElementById('code-display').innerText = htmlGen.workspaceToCode(workspace);
+    });
 
-        if (isCodeView) {
-            const code = htmlGen.workspaceToCode(workspace);
-            codeDiv.innerText = code;
-            codeDiv.style.display = 'block';
-            blocklyDiv.style.visibility = 'hidden';
-            btn.innerText = "BACK TO BLUEPRINT";
-        } else {
-            codeDiv.style.display = 'none';
-            blocklyDiv.style.visibility = 'visible';
-            btn.innerText = "VIEW CODE";
-        }
+    // --- EXPORT FUNCTION ---
+    function downloadHTML() {
+        const code = htmlGen.workspaceToCode(workspace);
+        if(!code) return alert("Drag some blocks first!");
+        const blob = new Blob([code], {type: 'text/html'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'index.html';
+        a.click();
     }
 </script>
 
