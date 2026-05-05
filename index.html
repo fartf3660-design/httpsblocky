@@ -1,215 +1,174 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Gemini - Pro Workspace</title>
+    <title>Gemini Blockly - HTML Architect</title>
+    <!-- Load Blockly Core -->
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    
     <style>
-        :root { --bg: #0f172a; --sidebar: #1e293b; --accent: #38bdf8; --text: #f8fafc; --panel: #334155; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+        :root { --accent: #4c97ff; --bg: #f9f9f9; }
+        body { margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: var(--bg); overflow: hidden; }
         
-        /* Layout */
-        header { height: 60px; background: #000; display: flex; align-items: center; padding: 0 25px; justify-content: space-between; border-bottom: 1px solid #334155; }
-        #app { display: flex; height: calc(100vh - 60px); }
+        header { 
+            height: 50px; background: var(--accent); color: white; 
+            display: flex; align-items: center; padding: 0 20px; 
+            justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
-        /* Sidebar */
-        #sidebar { width: 85px; background: var(--sidebar); display: flex; flex-direction: column; align-items: center; padding-top: 20px; border-right: 1px solid #334155; z-index: 100; }
-        .cat-btn { width: 55px; height: 55px; margin-bottom: 15px; background: #0f172a; color: #94a3b8; cursor: pointer; border-radius: 12px; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; transition: 0.3s; }
-        .cat-btn:hover, .cat-btn.active { border-color: var(--accent); color: var(--accent); background: #1e293b; }
+        #main-container { display: flex; height: calc(100vh - 50px); }
+        #blocklyDiv { flex: 1; height: 100%; }
 
-        /* Component Panel */
-        #panel { width: 260px; background: var(--panel); position: absolute; left: 85px; top: 0; bottom: 0; transform: translateX(-110%); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px; z-index: 90; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
-        #panel.open { transform: translateX(0); }
-        .tool { padding: 12px; background: #1e293b; border: 1px solid #475569; margin-bottom: 10px; border-radius: 8px; cursor: grab; font-size: 13px; color: #e2e8f0; }
-        .tool:hover { border-color: var(--accent); background: #0f172a; }
-
-        /* Workspace */
-        #workspace { flex: 1; position: relative; background: #000; background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 20px 20px; overflow: auto; padding: 100px; }
-        
-        /* Snapping Indicators */
-        .block-main.can-drop { border: 3px solid var(--accent) !important; box-shadow: 0 0 20px var(--accent); }
-
-        /* Blocks */
-        .block { position: absolute; width: 240px; background: #1e293b; border: 1px solid #475569; padding: 15px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: transform 0.1s; }
-        .block-main { width: 450px; min-height: 700px; border: 2px solid #64748b; background: #ffffff; color: #000; }
-        .drop-zone { min-height: 600px; padding: 20px; border: 2px dashed #cbd5e1; border-radius: 10px; margin-top: 15px; }
-
-        input, select, textarea { width: 100%; margin-top: 8px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; font-size: 12px; outline: none; }
-        input:focus { border-color: var(--accent); }
-        label { font-size: 10px; color: #94a3b8; font-weight: bold; margin-top: 12px; display: block; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Trash & Code */
-        #trash { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 40px; background: #ef4444; color: #fff; border-radius: 50px; font-weight: bold; cursor: pointer; border: 2px solid #000; box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4); }
-        #viewer { width: 420px; background: #000; border-left: 1px solid #334155; display: flex; flex-direction: column; }
-        #code-out { flex: 1; padding: 20px; font-family: 'Fira Code', monospace; font-size: 12px; color: #10b981; overflow: auto; line-height: 1.5; }
+        .controls { display: flex; gap: 10px; }
+        button { 
+            padding: 8px 20px; border-radius: 20px; border: none; 
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-run { background: #4caf50; color: white; }
+        .btn-run:hover { background: #43a047; transform: scale(1.05); }
+        .btn-clear { background: #ff4c4c; color: white; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-weight: 900; font-size: 20px; color: var(--accent);">GEMINI PRO ENGINE</div>
-    <button style="background:var(--accent); color:#000; border:none; padding:12px 25px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="exportFile()">DOWNLOAD BUNDLE</button>
+    <div style="font-weight: bold; font-size: 1.2rem;">Gemini HTML Blocks</div>
+    <div class="controls">
+        <button class="btn-clear" onclick="clearWorkspace()">Clear</button>
+        <button class="btn-run" onclick="runHTML()">▶ Run in New Tab</button>
+    </div>
 </header>
 
-<div id="app">
-    <div id="sidebar">
-        <button class="cat-btn" onclick="openTab('core', this)">CORE</button>
-        <button class="cat-btn" onclick="openTab('text', this)">TEXT</button>
-        <button class="cat-btn" onclick="openTab('forms', this)">FORMS</button>
-        <button class="cat-btn" onclick="openTab('logic', this)">LOGIC</button>
-        <button class="cat-btn" onclick="openTab('media', this)">MEDIA</button>
-    </div>
-
-    <div id="panel">
-        <div id="panel-content"></div>
-    </div>
-
-    <div id="workspace">
-        <div id="trash">🗑️ TRASH AREA</div>
-    </div>
-
-    <div id="viewer">
-        <div style="padding: 15px; background: #111; font-size: 11px; font-weight: bold; color: #94a3b8;">PRODUCTION CODE</div>
-        <pre id="code-out"></pre>
-    </div>
+<div id="main-container">
+    <div id="blocklyDiv"></div>
 </div>
 
+<!-- Toolbox Definition (The "Drawer" of blocks) -->
+<xml id="toolbox" style="display: none">
+    <category name="Structure" colour="#4c97ff">
+        <block type="html_root"></block>
+        <block type="html_container"></block>
+    </category>
+    <category name="Text Content" colour="#9966ff">
+        <block type="html_heading"></block>
+        <block type="html_paragraph"></block>
+        <block type="text"></block>
+    </category>
+    <category name="Media" colour="#ff6680">
+        <block type="html_image"></block>
+    </category>
+    <category name="Styles" colour="#59c059">
+        <block type="html_style"></block>
+    </category>
+</xml>
+
 <script>
-    const ws = document.getElementById('workspace');
-    const panel = document.getElementById('panel');
-    const content = document.getElementById('panel-content');
-    const codeOut = document.getElementById('code-out');
-    let draggedEl = null, offset = { x:0, y:0 };
-
-    const library = {
-        core: ['Main Website Wrapper', 'Navbar', 'Footer'],
-        text: ['Headline H1', 'Paragraph', 'Bullet Point'],
-        forms: ['Contact Form', 'Custom Button', 'Input Box'],
-        logic: ['Password Wall', 'Caesar Cipher', 'Base64 Tool'],
-        media: ['Local Video (Baked)', 'Web Image', 'YouTube Player']
-    };
-
-    function openTab(cat, btn) {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        if (panel.classList.contains('open') && panel.dataset.cat === cat) {
-            panel.classList.remove('open');
-        } else {
-            panel.dataset.cat = cat; panel.classList.add('open'); btn.classList.add('active');
-            content.innerHTML = `<h3 style="margin:0 0 15px 0; font-size:16px;">${cat.toUpperCase()}</h3>`;
-            library[cat].forEach(name => {
-                const d = document.createElement('div');
-                d.className = 'tool'; d.innerText = name; d.draggable = true;
-                d.dataset.type = name.toLowerCase().replace(/ /g, '_').replace(/[()]/g, '');
-                d.ondragstart = (e) => e.dataTransfer.setData('type', d.dataset.type);
-                content.appendChild(d);
-            });
+    // 1. DEFINE CUSTOM BLOCKS
+    Blockly.Blocks['html_root'] = {
+        init: function() {
+            this.appendDummyInput().appendField("Start HTML Page");
+            this.appendStatementInput("content").setCheck(null).appendField("body");
+            this.setColour(210);
+            this.setTooltip("The root of your website.");
         }
-    }
-
-    ws.ondragover = (e) => e.preventDefault();
-    ws.ondrop = (e) => {
-        const type = e.dataTransfer.getData('type');
-        if (type) createBlock(type, e.clientX - 450, e.clientY - 150);
     };
 
-    function createBlock(type, x, y) {
-        const b = document.createElement('div');
-        b.className = 'block ' + (type === 'main_website_wrapper' ? 'block-main' : '');
-        b.style.left = x + 'px'; b.style.top = y + 'px';
-        b.dataset.type = type;
+    Blockly.Blocks['html_container'] = {
+        init: function() {
+            this.appendDummyInput().appendField("Container (Div)");
+            this.appendStatementInput("content").setCheck(null);
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(160);
+        }
+    };
 
-        let ui = `<b style="color:var(--accent)">${type.replace(/_/g,' ').toUpperCase()}</b>`;
+    Blockly.Blocks['html_heading'] = {
+        init: function() {
+            this.appendValueInput("text").setCheck("String").appendField("Heading");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(260);
+        }
+    };
+
+    Blockly.Blocks['html_paragraph'] = {
+        init: function() {
+            this.appendValueInput("text").setCheck("String").appendField("Paragraph");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(260);
+        }
+    };
+
+    Blockly.Blocks['html_image'] = {
+        init: function() {
+            this.appendValueInput("url").setCheck("String").appendField("Image URL");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(330);
+        }
+    };
+
+    // 2. DEFINE GENERATORS (Turn blocks into HTML strings)
+    const htmlGenerator = new Blockly.Generator('HTML');
+
+    htmlGenerator['html_root'] = function(block) {
+        const content = htmlGenerator.statementToCode(block, 'content');
+        return `<!DOCTYPE html>\n<html>\n<body>\n${content}</body>\n</html>`;
+    };
+
+    htmlGenerator['html_container'] = function(block) {
+        const content = htmlGenerator.statementToCode(block, 'content');
+        return `<div style="border: 1px solid #ccc; padding: 20px; margin: 10px;">\n${content}</div>\n`;
+    };
+
+    htmlGenerator['html_heading'] = function(block) {
+        const text = htmlGenerator.valueToCode(block, 'text', 0) || '""';
+        return `<h1>${text.replace(/'/g, '') || 'Untitled'}</h1>\n`;
+    };
+
+    htmlGenerator['html_paragraph'] = function(block) {
+        const text = htmlGenerator.valueToCode(block, 'text', 0) || '""';
+        return `<p>${text.replace(/'/g, '') || '...'}</p>\n`;
+    };
+
+    htmlGenerator['html_image'] = function(block) {
+        const url = htmlGenerator.valueToCode(block, 'url', 0) || '""';
+        return `<img src=${url} style="max-width: 100%;">\n`;
+    };
+
+    htmlGenerator['text'] = function(block) {
+        return [block.getFieldValue('TEXT'), 0];
+    };
+
+    // 3. INJECT BLOCKLY
+    const workspace = Blockly.inject('blocklyDiv', {
+        toolbox: document.getElementById('toolbox'),
+        scrollbars: true,
+        move: { scrollbars: true, drag: true, wheel: true },
+        zoom: { controls: true, wheel: true, startScale: 1.0, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2 }
+    });
+
+    // 4. RUN FUNCTION (The "Scratch" way)
+    function runHTML() {
+        const code = htmlGenerator.workspaceToCode(workspace);
         
-        if (type === 'main_website_wrapper') ui += `<div class="drop-zone"></div>`;
-        else if (type === 'headline_h1') ui += `<label>Text</label><input type="text" value="Welcome" oninput="update()">`;
-        else if (type === 'paragraph') ui += `<label>Text</label><textarea oninput="update()">Content...</textarea>`;
-        else if (type === 'password_wall') ui += `<label>Passcode</label><input type="text" value="1234" oninput="update()">`;
-        else if (type === 'custom_button') ui += `<label>Label</label><input type="text" value="Go" oninput="update()"><label>Alert</label><input type="text" value="Hi!" oninput="update()">`;
-        else if (type === 'local_video_baked') ui += `<label>Upload Video</label><input type="file" onchange="handleFile(this)">`;
-        else if (type === 'caesar_cipher') ui += `<label>Secret</label><input type="text" value="abc" oninput="update()"><label>Shift</label><input type="number" value="1" oninput="update()">`;
-        else ui += `<label>Edit</label><input type="text" oninput="update()">`;
-
-        b.innerHTML = ui;
-        b.onmousedown = (e) => { if(!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) { draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; b.style.zIndex = 1000; } };
-        ws.appendChild(b);
-        update();
-    }
-
-    function handleFile(input) {
-        const r = new FileReader();
-        r.onload = (e) => { input.dataset.base64 = e.target.result; update(); };
-        r.readAsDataURL(input.files[0]);
-    }
-
-    window.onmousemove = (e) => {
-        if (!draggedEl) return;
-        draggedEl.style.left = (e.clientX - offset.x - (panel.classList.contains('open') ? 345 : 85)) + 'px';
-        draggedEl.style.top = (e.clientY - offset.y - 60) + 'px';
-
-        const main = document.querySelector('.block-main');
-        if (main && draggedEl !== main) {
-            const r = main.getBoundingClientRect();
-            // Magnetic Snapping Logic
-            if (e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom) {
-                main.classList.add('can-drop');
-            } else {
-                main.classList.remove('can-drop');
-            }
+        if (!code.includes('<html>')) {
+            alert("Please use the 'Start HTML Page' block first!");
+            return;
         }
-    };
 
-    window.onmouseup = (e) => {
-        if (!draggedEl) return;
-        const main = document.querySelector('.block-main');
-        if (main && draggedEl !== main) {
-            const r = main.getBoundingClientRect();
-            if (e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom) {
-                main.querySelector('.drop-zone').appendChild(draggedEl);
-                draggedEl.style.position = 'relative'; draggedEl.style.left = '0'; draggedEl.style.top = '0';
-                main.classList.remove('can-drop');
-            }
-        }
-        const t = document.getElementById('trash').getBoundingClientRect();
-        if (e.clientX > t.left && e.clientX < t.right && e.clientY > t.top && e.clientY < t.bottom) draggedEl.remove();
-        draggedEl = null; update();
-    };
-
-    function update() {
-        const main = document.querySelector('.block-main');
-        if (!main) { codeOut.innerText = "Select CORE > Main Website Wrapper"; return; }
-        
-        let html = "", css = "body{font-family:sans-serif; text-align:center; padding:50px; background:#fff;} .box{border:1px solid #000; padding:20px; margin:20px;}", js = "";
-        const blocks = main.querySelectorAll('.block');
-
-        blocks.forEach(b => {
-            const t = b.dataset.type;
-            const ins = b.querySelectorAll('input, textarea');
-
-            if (t === 'headline_h1') html += `<h1>${ins[0].value}</h1>\n`;
-            if (t === 'paragraph') html += `<p>${ins[0].value}</p>\n`;
-            if (t === 'custom_button') {
-                const id = "b"+Math.floor(Math.random()*999);
-                html += `<button id="${id}">${ins[0].value}</button>\n`;
-                js += `document.getElementById('${id}').onclick=()=>alert('${ins[1].value}');\n`;
-            }
-            if (t === 'password_wall') {
-                js += `if(prompt("Security Check: Password?") !== "${ins[0].value}") { document.body.innerHTML = "<h1>UNAUTHORIZED</h1>"; }\n`;
-            }
-            if (t === 'local_video_baked') {
-                html += `<video controls width="100%"><source src="${ins[0].dataset.base64 || ''}"></video>\n`;
-            }
-            if (t === 'caesar_cipher') {
-                html += `<div class="box"><strong>Cipher Result:</strong> <span id="c"></span></div>\n`;
-                js += `(function(){ let s="${ins[0].value}", h=${ins[1].value}, r=""; for(let i=0; i<s.length; i++){ r += String.fromCharCode(s.charCodeAt(i)+h); } document.getElementById('c').innerText = r; })();\n`;
-            }
-        });
-
-        codeOut.innerText = `<!DOCTYPE html>\n<html>\n<head><style>${css}</style></head>\n<body>\n${html}\n<script>${js}<\/script></body>\n</html>`;
+        // Create a data blob so we can open it as a real URL
+        const blob = new Blob([code], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
     }
 
-    function exportFile() {
-        const blob = new Blob([codeOut.innerText], {type:'text/html'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'index.html'; a.click();
+    function clearWorkspace() {
+        if (confirm("Clear all blocks?")) workspace.clear();
     }
 </script>
+
 </body>
 </html>
