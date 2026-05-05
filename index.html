@@ -2,96 +2,105 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Gemini - Ultra Block Engine</title>
+    <title>Gemini - Pro Workspace</title>
     <style>
-        :root { --accent: #000; --bg: #f0f0f0; --sidebar-w: 80px; --panel-w: 240px; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); overflow: hidden; }
+        :root { --bg: #0f172a; --sidebar: #1e293b; --accent: #38bdf8; --text: #f8fafc; --panel: #334155; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
         
-        header { height: 50px; background: #000; color: #fff; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; z-index: 100; position: relative; }
-        #main-container { display: flex; height: calc(100vh - 50px); position: relative; }
+        /* Layout */
+        header { height: 60px; background: #000; display: flex; align-items: center; padding: 0 25px; justify-content: space-between; border-bottom: 1px solid #334155; }
+        #app { display: flex; height: calc(100vh - 60px); }
 
-        /* Sidebar & Sliding Panels */
-        #sidebar { width: var(--sidebar-w); background: #1a1a1a; display: flex; flex-direction: column; align-items: center; padding-top: 15px; z-index: 60; border-right: 1px solid #333; }
-        .cat-btn { width: 60px; height: 60px; margin-bottom: 10px; background: #333; color: #aaa; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; border-radius: 8px; border: none; transition: 0.2s; }
-        .cat-btn:hover, .cat-btn.active { background: #fff; color: #000; transform: scale(1.05); }
+        /* Sidebar */
+        #sidebar { width: 85px; background: var(--sidebar); display: flex; flex-direction: column; align-items: center; padding-top: 20px; border-right: 1px solid #334155; z-index: 100; }
+        .cat-btn { width: 55px; height: 55px; margin-bottom: 15px; background: #0f172a; color: #94a3b8; cursor: pointer; border-radius: 12px; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; transition: 0.3s; }
+        .cat-btn:hover, .cat-btn.active { border-color: var(--accent); color: var(--accent); background: #1e293b; }
 
-        #tab-panel { width: var(--panel-w); background: #fff; border-right: 1px solid #ccc; position: absolute; left: var(--sidebar-w); top: 0; bottom: 0; transform: translateX(-110%); transition: transform 0.4s; z-index: 50; overflow-y: auto; padding: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
-        #tab-panel.open { transform: translateX(0); }
-        .tool { padding: 12px; background: #f9f9f9; border: 1px solid #ddd; cursor: grab; font-size: 12px; margin-bottom: 10px; border-radius: 5px; font-weight: 600; color: #444; }
-        .tool:hover { background: #000; color: #fff; }
+        /* Component Panel */
+        #panel { width: 260px; background: var(--panel); position: absolute; left: 85px; top: 0; bottom: 0; transform: translateX(-110%); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px; z-index: 90; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+        #panel.open { transform: translateX(0); }
+        .tool { padding: 12px; background: #1e293b; border: 1px solid #475569; margin-bottom: 10px; border-radius: 8px; cursor: grab; font-size: 13px; color: #e2e8f0; }
+        .tool:hover { border-color: var(--accent); background: #0f172a; }
 
         /* Workspace */
-        #workspace { flex: 1; position: relative; background: #fff; overflow: auto; padding: 80px; }
-        .block { position: absolute; width: 250px; background: #fff; border: 2px solid #000; padding: 15px; z-index: 10; box-shadow: 5px 5px 0px #eee; }
-        .block-main { width: 450px; min-height: 700px; border: 4px solid #000; background: #fff; }
-        .drop-zone { min-height: 600px; border: 2px dashed #ccc; margin-top: 15px; padding: 15px; background: #fafafa; }
+        #workspace { flex: 1; position: relative; background: #000; background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 20px 20px; overflow: auto; padding: 100px; }
+        
+        /* Snapping Indicators */
+        .block-main.can-drop { border: 3px solid var(--accent) !important; box-shadow: 0 0 20px var(--accent); }
 
-        label { font-size: 10px; color: #777; font-weight: bold; margin-top: 10px; display: block; text-transform: uppercase; }
-        input, select, textarea { width: 100%; margin-top: 5px; padding: 8px; border: 1px solid #bbb; font-size: 12px; box-sizing: border-box; }
+        /* Blocks */
+        .block { position: absolute; width: 240px; background: #1e293b; border: 1px solid #475569; padding: 15px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: transform 0.1s; }
+        .block-main { width: 450px; min-height: 700px; border: 2px solid #64748b; background: #ffffff; color: #000; }
+        .drop-zone { min-height: 600px; padding: 20px; border: 2px dashed #cbd5e1; border-radius: 10px; margin-top: 15px; }
 
-        /* Controls */
-        #trash { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 40px; background: #ff3e3e; color: #fff; font-weight: bold; border-radius: 50px; cursor: pointer; border: 3px solid #000; z-index: 200; }
-        #viewer { width: 400px; background: #222; border-left: 2px solid #000; display: flex; flex-direction: column; }
-        #code-out { flex: 1; padding: 15px; font-family: monospace; font-size: 11px; color: #00ff41; overflow: auto; white-space: pre-wrap; margin: 0; }
+        input, select, textarea { width: 100%; margin-top: 8px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; font-size: 12px; outline: none; }
+        input:focus { border-color: var(--accent); }
+        label { font-size: 10px; color: #94a3b8; font-weight: bold; margin-top: 12px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Trash & Code */
+        #trash { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 40px; background: #ef4444; color: #fff; border-radius: 50px; font-weight: bold; cursor: pointer; border: 2px solid #000; box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4); }
+        #viewer { width: 420px; background: #000; border-left: 1px solid #334155; display: flex; flex-direction: column; }
+        #code-out { flex: 1; padding: 20px; font-family: 'Fira Code', monospace; font-size: 12px; color: #10b981; overflow: auto; line-height: 1.5; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-weight: 900;">GEMINI BLOCK ENGINE v6.0</div>
-    <button style="background:#00ff41; border:none; padding:10px; font-weight:bold; cursor:pointer;" onclick="exportFile()">EXPORT index.html</button>
+    <div style="font-weight: 900; font-size: 20px; color: var(--accent);">GEMINI PRO ENGINE</div>
+    <button style="background:var(--accent); color:#000; border:none; padding:12px 25px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="exportFile()">DOWNLOAD BUNDLE</button>
 </header>
 
-<div id="main-container">
+<div id="app">
     <div id="sidebar">
-        <button class="cat-btn" onclick="toggleTab('core', this)">📦 CORE</button>
-        <button class="cat-btn" onclick="toggleTab('text', this)">✍️ TEXT</button>
-        <button class="cat-btn" onclick="toggleTab('forms', this)">📝 FORMS</button>
-        <button class="cat-btn" onclick="toggleTab('logic', this)">🔐 LOGIC</button>
-        <button class="cat-btn" onclick="toggleTab('media', this)">🎬 MEDIA</button>
+        <button class="cat-btn" onclick="openTab('core', this)">CORE</button>
+        <button class="cat-btn" onclick="openTab('text', this)">TEXT</button>
+        <button class="cat-btn" onclick="openTab('forms', this)">FORMS</button>
+        <button class="cat-btn" onclick="openTab('logic', this)">LOGIC</button>
+        <button class="cat-btn" onclick="openTab('media', this)">MEDIA</button>
     </div>
 
-    <div id="tab-panel">
-        <div id="tab-content"></div>
+    <div id="panel">
+        <div id="panel-content"></div>
     </div>
 
     <div id="workspace">
-        <div id="trash">🗑️ TRASH</div>
+        <div id="trash">🗑️ TRASH AREA</div>
     </div>
 
     <div id="viewer">
+        <div style="padding: 15px; background: #111; font-size: 11px; font-weight: bold; color: #94a3b8;">PRODUCTION CODE</div>
         <pre id="code-out"></pre>
     </div>
 </div>
 
 <script>
     const ws = document.getElementById('workspace');
-    const panel = document.getElementById('tab-panel');
-    const tabContent = document.getElementById('tab-content');
+    const panel = document.getElementById('panel');
+    const content = document.getElementById('panel-content');
     const codeOut = document.getElementById('code-out');
-    let draggedEl = null, offset = { x: 0, y: 0 };
+    let draggedEl = null, offset = { x:0, y:0 };
 
     const library = {
-        core: ['Main Container', 'Navigation Bar', 'Footer'],
-        text: ['Heading H1', 'Subhead H2', 'Paragraph', 'Bullet List'],
-        forms: ['Contact Form', 'Simple Button', 'Input Field'],
-        logic: ['Password Lock', 'Base64 Encoder', 'Caesar Cipher'],
-        media: ['Local Video', 'Local Audio', 'Web Image']
+        core: ['Main Website Wrapper', 'Navbar', 'Footer'],
+        text: ['Headline H1', 'Paragraph', 'Bullet Point'],
+        forms: ['Contact Form', 'Custom Button', 'Input Box'],
+        logic: ['Password Wall', 'Caesar Cipher', 'Base64 Tool'],
+        media: ['Local Video (Baked)', 'Web Image', 'YouTube Player']
     };
 
-    function toggleTab(cat, btn) {
+    function openTab(cat, btn) {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         if (panel.classList.contains('open') && panel.dataset.cat === cat) {
             panel.classList.remove('open');
         } else {
             panel.dataset.cat = cat; panel.classList.add('open'); btn.classList.add('active');
-            tabContent.innerHTML = `<div style="font-weight:bold; margin-bottom:10px;">${cat.toUpperCase()}</div>`;
+            content.innerHTML = `<h3 style="margin:0 0 15px 0; font-size:16px;">${cat.toUpperCase()}</h3>`;
             library[cat].forEach(name => {
-                const t = document.createElement('div');
-                t.className = 'tool'; t.innerText = name; t.draggable = true;
-                t.dataset.type = name.toLowerCase().replace(/ /g, '_');
-                t.ondragstart = (e) => e.dataTransfer.setData('type', t.dataset.type);
-                tabContent.appendChild(t);
+                const d = document.createElement('div');
+                d.className = 'tool'; d.innerText = name; d.draggable = true;
+                d.dataset.type = name.toLowerCase().replace(/ /g, '_').replace(/[()]/g, '');
+                d.ondragstart = (e) => e.dataTransfer.setData('type', d.dataset.type);
+                content.appendChild(d);
             });
         }
     }
@@ -99,30 +108,28 @@
     ws.ondragover = (e) => e.preventDefault();
     ws.ondrop = (e) => {
         const type = e.dataTransfer.getData('type');
-        if (type) createBlock(type, e.clientX - 400, e.clientY - 150);
+        if (type) createBlock(type, e.clientX - 450, e.clientY - 150);
     };
 
     function createBlock(type, x, y) {
         const b = document.createElement('div');
-        b.className = 'block ' + (type === 'main_container' ? 'block-main' : '');
+        b.className = 'block ' + (type === 'main_website_wrapper' ? 'block-main' : '');
         b.style.left = x + 'px'; b.style.top = y + 'px';
         b.dataset.type = type;
 
-        let ui = `<b>${type.replace(/_/g,' ').toUpperCase()}</b>`;
+        let ui = `<b style="color:var(--accent)">${type.replace(/_/g,' ').toUpperCase()}</b>`;
         
-        // CUSTOM UI FOR EVERY BLOCK
-        if (type === 'main_container') ui += `<div class="drop-zone"></div>`;
-        else if (type === 'heading_h1') ui += `<label>Title</label><input type="text" value="My Website" oninput="update()">`;
-        else if (type === 'paragraph') ui += `<label>Text</label><textarea oninput="update()">Enter text...</textarea>`;
-        else if (type === 'password_lock') ui += `<label>Set Password</label><input type="text" value="1234" oninput="update()">`;
-        else if (type === 'simple_button') ui += `<label>Label</label><input type="text" value="Click Me" oninput="update()"><label>Alert Text</label><input type="text" value="Hello!" oninput="update()">`;
-        else if (type === 'local_video' || type === 'local_audio') ui += `<label>Upload</label><input type="file" onchange="handleFile(this)">`;
-        else if (type === 'web_image') ui += `<label>Image URL</label><input type="text" value="https://via.placeholder.com/150" oninput="update()">`;
-        else if (type === 'caesar_cipher') ui += `<label>Secret Message</label><input type="text" value="Attack at dawn" oninput="update()"><label>Shift</label><input type="number" value="1" oninput="update()">`;
-        else ui += `<label>Value</label><input type="text" oninput="update()">`;
+        if (type === 'main_website_wrapper') ui += `<div class="drop-zone"></div>`;
+        else if (type === 'headline_h1') ui += `<label>Text</label><input type="text" value="Welcome" oninput="update()">`;
+        else if (type === 'paragraph') ui += `<label>Text</label><textarea oninput="update()">Content...</textarea>`;
+        else if (type === 'password_wall') ui += `<label>Passcode</label><input type="text" value="1234" oninput="update()">`;
+        else if (type === 'custom_button') ui += `<label>Label</label><input type="text" value="Go" oninput="update()"><label>Alert</label><input type="text" value="Hi!" oninput="update()">`;
+        else if (type === 'local_video_baked') ui += `<label>Upload Video</label><input type="file" onchange="handleFile(this)">`;
+        else if (type === 'caesar_cipher') ui += `<label>Secret</label><input type="text" value="abc" oninput="update()"><label>Shift</label><input type="number" value="1" oninput="update()">`;
+        else ui += `<label>Edit</label><input type="text" oninput="update()">`;
 
         b.innerHTML = ui;
-        b.onmousedown = (e) => { if(!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) { draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; } };
+        b.onmousedown = (e) => { if(!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) { draggedEl = b; offset.x = e.offsetX; offset.y = e.offsetY; b.style.zIndex = 1000; } };
         ws.appendChild(b);
         update();
     }
@@ -135,20 +142,32 @@
 
     window.onmousemove = (e) => {
         if (!draggedEl) return;
-        draggedEl.style.left = (e.clientX - offset.x - 300) + 'px';
-        draggedEl.style.top = (e.clientY - offset.y - 50) + 'px';
+        draggedEl.style.left = (e.clientX - offset.x - (panel.classList.contains('open') ? 345 : 85)) + 'px';
+        draggedEl.style.top = (e.clientY - offset.y - 60) + 'px';
+
         const main = document.querySelector('.block-main');
         if (main && draggedEl !== main) {
             const r = main.getBoundingClientRect();
+            // Magnetic Snapping Logic
             if (e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom) {
-                main.querySelector('.drop-zone').appendChild(draggedEl);
-                draggedEl.style.position = 'relative'; draggedEl.style.left = '0'; draggedEl.style.top = '0';
+                main.classList.add('can-drop');
+            } else {
+                main.classList.remove('can-drop');
             }
         }
     };
 
     window.onmouseup = (e) => {
         if (!draggedEl) return;
+        const main = document.querySelector('.block-main');
+        if (main && draggedEl !== main) {
+            const r = main.getBoundingClientRect();
+            if (e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom) {
+                main.querySelector('.drop-zone').appendChild(draggedEl);
+                draggedEl.style.position = 'relative'; draggedEl.style.left = '0'; draggedEl.style.top = '0';
+                main.classList.remove('can-drop');
+            }
+        }
         const t = document.getElementById('trash').getBoundingClientRect();
         if (e.clientX > t.left && e.clientX < t.right && e.clientY > t.top && e.clientY < t.bottom) draggedEl.remove();
         draggedEl = null; update();
@@ -156,42 +175,40 @@
 
     function update() {
         const main = document.querySelector('.block-main');
-        if (!main) { codeOut.innerText = "Add 'Main Container' first!"; return; }
+        if (!main) { codeOut.innerText = "Select CORE > Main Website Wrapper"; return; }
         
         let html = "", css = "body{font-family:sans-serif; text-align:center; padding:50px; background:#fff;} .box{border:1px solid #000; padding:20px; margin:20px;}", js = "";
         const blocks = main.querySelectorAll('.block');
 
         blocks.forEach(b => {
-            const type = b.dataset.type;
-            const inputs = b.querySelectorAll('input, textarea');
+            const t = b.dataset.type;
+            const ins = b.querySelectorAll('input, textarea');
 
-            if (type === 'heading_h1') html += `<h1>${inputs[0].value}</h1>\n`;
-            if (type === 'paragraph') html += `<p>${inputs[0].value}</p>\n`;
-            if (type === 'web_image') html += `<img src="${inputs[0].value}" style="max-width:100%;">\n`;
-            if (type === 'local_video') html += `<video controls width="100%"><source src="${inputs[0].dataset.base64 || ''}"></video>\n`;
-            if (type === 'simple_button') {
-                const id = "btn" + Math.floor(Math.random()*1000);
-                html += `<button id="${id}">${inputs[0].value}</button>\n`;
-                js += `document.getElementById('${id}').onclick = () => alert("${inputs[1].value}");\n`;
+            if (t === 'headline_h1') html += `<h1>${ins[0].value}</h1>\n`;
+            if (t === 'paragraph') html += `<p>${ins[0].value}</p>\n`;
+            if (t === 'custom_button') {
+                const id = "b"+Math.floor(Math.random()*999);
+                html += `<button id="${id}">${ins[0].value}</button>\n`;
+                js += `document.getElementById('${id}').onclick=()=>alert('${ins[1].value}');\n`;
             }
-            if (type === 'password_lock') {
-                js += `if(prompt("Password?") !== "${inputs[0].value}") { document.body.innerHTML = "<h1>LOCKED</h1>"; }\n`;
+            if (t === 'password_wall') {
+                js += `if(prompt("Security Check: Password?") !== "${ins[0].value}") { document.body.innerHTML = "<h1>UNAUTHORIZED</h1>"; }\n`;
             }
-            if (type === 'caesar_cipher') {
-                html += `<div class="box"><strong>Cipher:</strong> <span id="ciph"></span></div>\n`;
-                js += `let s="${inputs[0].value}", shift=${inputs[1].value}, res=""; for(let i=0; i<s.length; i++){ res += String.fromCharCode(s.charCodeAt(i)+shift); } document.getElementById('ciph').innerText = res;\n`;
+            if (t === 'local_video_baked') {
+                html += `<video controls width="100%"><source src="${ins[0].dataset.base64 || ''}"></video>\n`;
             }
-            if (type === 'contact_form') {
-                html += `<form class="box">Name: <input type="text"><br>Message: <textarea></textarea><br><button type="button">Send</button></form>\n`;
+            if (t === 'caesar_cipher') {
+                html += `<div class="box"><strong>Cipher Result:</strong> <span id="c"></span></div>\n`;
+                js += `(function(){ let s="${ins[0].value}", h=${ins[1].value}, r=""; for(let i=0; i<s.length; i++){ r += String.fromCharCode(s.charCodeAt(i)+h); } document.getElementById('c').innerText = r; })();\n`;
             }
         });
 
-        codeOut.innerText = `<!DOCTYPE html><html><head><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
+        codeOut.innerText = `<!DOCTYPE html>\n<html>\n<head><style>${css}</style></head>\n<body>\n${html}\n<script>${js}<\/script></body>\n</html>`;
     }
 
     function exportFile() {
-        const b = new Blob([codeOut.innerText], {type:'text/html'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'index.html'; a.click();
+        const blob = new Blob([codeOut.innerText], {type:'text/html'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'index.html'; a.click();
     }
 </script>
 </body>
